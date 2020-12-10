@@ -3,12 +3,12 @@ import {FieldOperaton} from "./fieldOperation";
 
 export class Condition{
 
-    private FieldName!: string;
-    private FieldValue:any;
-    private IsCaseInSensitiveSearch!:boolean;
-    private OperatorSymbol!: FieldOperaton;
-    private ConditionalSymbol!: ConditionalOperation;
-    private TypeName!: string;
+    public FieldName!: string;
+    public FieldValue:any;
+    public IsCaseInSensitiveSearch!:boolean;
+    public OperatorSymbol!: FieldOperaton;
+    public ConditionalSymbol!: ConditionalOperation;
+    public TypeName!: string;
 
     Condition(filedName:string,fieldValue:any,operatorSymbol:FieldOperaton,conditionalSymbol:ConditionalOperation,isCaseInSensitiveSearch:boolean=false){
         

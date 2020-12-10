@@ -3,6 +3,7 @@ import {Filter} from "./filter";
 // import {Condition} from "./condition";
 // import { CultureInfo } from "./cultureInfo";
 import { DtoBase } from "./DtoBase";
+import { Guid } from "./guid";
 
 //************** REQUEST MODEL FOR PUT/POST/DELETE **************************************** */
 export class RequestModel<TDto  extends DtoBase> extends RequestModelBase{
@@ -52,11 +53,15 @@ export class RequestModel<TDto  extends DtoBase> extends RequestModelBase{
 
 //************** REQUEST MODEL FOR QUERY **************************************** */
 export class RequestModelQuery{
+    public RequestGuid:string;
     public Children: string[] = [];
     public Filter: Filter = new Filter;
 
     constructor(){
+       // this.RequestGuid = new Guid().NewGuid();
+    };
 
-    }
+    //require('uuid');
+    //const uuidv4 = require('uuid/v4');
 };
 

@@ -3,21 +3,18 @@ import {Condition} from "./condition";
 
 export class Filter{
 
-    private OrderByField!: string;
-    private IsOrderByFieldAsc!: boolean;
-    private Conditions: Array<Condition>;
-    private PageInfo!:Page;
+    public OrderByField!: string;
+    public IsOrderByFieldAsc!: boolean;
+    public Conditions: Array<Condition>;
+    public PageInfo!:Page;
 
-    public getConditions(): Array<Condition> {
-		return this.Conditions;
-	}
+    
 
-	public setConditions(value: Array<Condition>) {
-		this.Conditions = value;
-    }
+
     
     constructor(){
         this.IsOrderByFieldAsc = false;
-        this.Conditions = new Array<Condition>();
+      this.Conditions = new Array<Condition>();
+      this.PageInfo = new Page(10,1,0,1);
     }
 }
