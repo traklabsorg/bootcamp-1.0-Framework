@@ -3,18 +3,50 @@ import {Condition} from "./condition";
 
 export class Filter{
 
-    public OrderByField!: string;
-    public IsOrderByFieldAsc!: boolean;
+    public OrderByField: string;
+    public IsOrderByFieldAsc: boolean;
     public Conditions: Array<Condition>;
-    public PageInfo!:Page;
+    public PageInfo:Page;
+    // static Conditions: any;
 
-    
-
-
-    
     constructor(){
-        this.IsOrderByFieldAsc = false;
-      this.Conditions = new Array<Condition>();
-      this.PageInfo = new Page(10,1,0,1);
+      this.OrderByField = "";
+      this.IsOrderByFieldAsc = false;
+      this.Conditions = [];
+      this.PageInfo = new Page;
     }
+
+    // public getConditions(): Array<Condition> {
+		//   return this.Conditions;
+	  // }
+
+	  // public setConditions(value: Array<Condition>) {
+		//   this.Conditions = value;
+    // }
+
+    // public getPageInfo(): Page {
+    //   return this.PageInfo;
+    // }
+
+    // public setPageInfo(value: Page) {
+    //   this.PageInfo = value;
+    // }
+
+    // public getOrderByField(): string {
+    //   return this.OrderByField;
+    // }
+
+    // public setOrderByField(value: string) {
+    //   this.OrderByField = value;
+    // }
+
+    // public getIsOrderByFieldAsc(): boolean {
+    //   return this.IsOrderByFieldAsc;
+    // }
+
+    // public setIsOrderByFieldAsc(value: boolean) {
+    //   this.IsOrderByFieldAsc = value;
+    // }
+    
+    
 }

@@ -52,16 +52,16 @@ export class RequestModel<TDto  extends DtoBase> extends RequestModelBase{
 };
 
 //************** REQUEST MODEL FOR QUERY **************************************** */
-export class RequestModelQuery{
-    public RequestGuid:string;
-    public Children: string[] = [];
-    public Filter: Filter = new Filter;
+// export class RequestModelQuery{
+//     public RequestGuid:string;
+//     public Children: string[] = [];
+//     public Filter: Filter = new Filter;
 
-    constructor(){
+//     constructor(){
        // this.RequestGuid = new Guid().NewGuid();
-    };
+    // };
 
     //require('uuid');
     //const uuidv4 = require('uuid/v4');
-};
+// };
 
