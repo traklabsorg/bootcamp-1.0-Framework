@@ -4,12 +4,14 @@ import { HttpException } from "@nestjs/common/exceptions/http.exception";
 import { ClassType } from "class-transformer/ClassTransformer";
 import { Page } from "../entities/page";
 // import { pluralize } from "sequelize/types/lib/utils";
-import { RequestModelQuery } from "../entities/RequestModel";
+// import { RequestModelQuery } from "../entities/RequestModel";
 import { ResponseModel } from "../entities/ResponseModel";
 import { ServiceOperationResultType } from "../entities/ServiceOperationResultType";
 import { createConnection, EntitySchema, getRepository, ObjectType, Repository } from "typeorm";
 import { DtoBase } from "../entities/DtoBase";
 import { EntityBase } from "../entities/EntityBase";
+import { RequestModelQuery } from "../entities/RequestModelQuery";
+import { RequestModel } from "../entities/RequestModel";
 const objectMapper = require('object-mapper');
 var pluralize = require('pluralize')
 
@@ -50,31 +52,47 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
 
 
   getByIds(ids: any[]): Promise<TEntity[]> {
+    console.log("ids...." + JSON.stringify(ids));
     return this.genericRepository.findByIds(ids);
   }
 
   getAll(): Promise<TEntity[]> {
-    return this.genericRepository.find();
+    try {
+      let result = this.genericRepository.find();
+      console.log("result is....." + JSON.stringify(result));
+      return result;
+    }
+    catch (error) {
+      console.log("Error is....." + error);
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
-  async create(entity: TEntity[]): Promise<TEntity[]> {
+  async create(entity: RequestModel<TDto>): Promise<ResponseModel<TDto>> {
     try {
       await console.log("Inside insert of generic repository...entity is...." + JSON.stringify(entity));
-      const result: TEntity[] = [];
+      var result: TDto[] = [];
     
       let result1: any;
-      entity.forEach(async (entity_sample) => {
+      let final_result: ResponseModel<TDto> = new ResponseModel("123", null, null, "123", "123", "gft", null);
+      
+      await Promise.all(entity.DataCollection.map(async (entity_sample) => {
         console.log("Entity sample is......" + JSON.stringify(entity_sample));
         console.log("Map is......" + JSON.stringify(this.entityMap));
         console.log("result....." + objectMapper(entity_sample, this.entityMap));
       
         result1 = await this.genericRepository.save(objectMapper(entity_sample, this.entityMap))
+        console.log("result is......." + JSON.stringify(result1));
+        // result1 = await this.genericRepository.save(entity_sample)
       
         await result.push(result1)
         await console.log("present result is......" + JSON.stringify(result));
       })
-      await console.log("Returning result1....." + JSON.stringify(result));
-      return result;
+      );
+      console.log("Returning result1....." + JSON.stringify(result));
+      // result.forEach((entity:TEntity)=>)
+      final_result.setDataCollection(result);
+      return final_result;
     }
     catch (error){
       console.log("Error occured while insering groups....." + error);

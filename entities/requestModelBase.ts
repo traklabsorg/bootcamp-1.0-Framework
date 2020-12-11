@@ -57,7 +57,7 @@ export abstract class RequestModelBase{
     private TenantId!: number;
     private IsRequestFromBackgroundService!: boolean;
     private version!: string;
-    private RequestGuid!: string;
+    public RequestGuid!: string;
     private CultureInformation!: string;
 
     // private guid_obj = new Guid();

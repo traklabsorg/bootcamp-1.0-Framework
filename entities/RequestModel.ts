@@ -8,9 +8,12 @@ import { Guid } from "./guid";
 //************** REQUEST MODEL FOR PUT/POST/DELETE **************************************** */
 export class RequestModel<TDto  extends DtoBase> extends RequestModelBase{
    
-    public DataCollection: Array<TDto> | null = [];
+    public DataCollection: TDto[] | null = [];
     public ErrorCode:number;
-    public Error:string;
+    public Error: string;
+    
+    public SocketId: string;
+
 
     constructor(){
         //TODO: GENERATE THE TENANT ID, CULTURE AND REQUEST ID INSIDE BASE CLASS
@@ -18,6 +21,7 @@ export class RequestModel<TDto  extends DtoBase> extends RequestModelBase{
         this.ErrorCode=200;
         this.Error = '';
         this.DataCollection = new Array<TDto>();
+        this.SocketId = "";
        // let filter = new Filter();
        // filter.setConditions(new Array<Condition>());
     };
@@ -52,16 +56,16 @@ export class RequestModel<TDto  extends DtoBase> extends RequestModelBase{
 };
 
 //************** REQUEST MODEL FOR QUERY **************************************** */
-// export class RequestModelQuery{
-//     public RequestGuid:string;
-//     public Children: string[] = [];
-//     public Filter: Filter = new Filter;
+export class RequestModelQuery{
+    public RequestGuid:string;
+    public Children: string[] = [];
+    public Filter: Filter = new Filter;
 
-//     constructor(){
+    constructor(){
        // this.RequestGuid = new Guid().NewGuid();
-    // };
+    };
 
     //require('uuid');
     //const uuidv4 = require('uuid/v4');
-// };
+};
 

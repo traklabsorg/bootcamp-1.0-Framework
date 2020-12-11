@@ -15,12 +15,12 @@ export class EntityBase {
         this.RowVersion = 0; // new Buffer("abc");
         this.CreationDate = new Date(); 
         this.ModifiedDate = new Date();
-        this.DeleteDate = new Date();
+        this.DeleteDate = null;
       this.EntityState = 0;
       this.State = "Active"
     }
   
-  @Column({ name: "state", nullable: true })
+  // @Column({ name: "state", nullable: true })
   State: string;        // "Active" & "IsDeleted"
 
     //let date = new Date(); //gives current date in date format
@@ -33,7 +33,7 @@ export class EntityBase {
     @UpdateDateColumn({name:'modified_date', type: "timestamp with time zone", nullable: true , default: () => "CURRENT_TIMESTAMP" })
     ModifiedDate: Date;
   
-    @DeleteDateColumn({ name: 'delete_date', type: "timestamp with time zone", nullable: true, default: () => "CURRENT_TIMESTAMP" })
+    @DeleteDateColumn({ name: 'delete_date', type: "timestamp with time zone", nullable: true, default: () => null })
     DeleteDate: Date;
 
     @Column({name:'created_by',nullable:true})

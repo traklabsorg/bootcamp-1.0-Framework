@@ -1,14 +1,17 @@
 import { ServiceOperationResultType } from "./ServiceOperationResultType";
 import {Message} from "./Message"
+import { DtoBase } from "./DtoBase";
 // import { TDto } from "../../app/3.1 dtos/TDto";
 // export class ResponseModel<T extends TDto> 
-export class ResponseModel<T> {
+export class ResponseModel<TDto extends DtoBase> {
 
     private RequestId : string;
-    private DataCollection : Array<T> | null;
+    private DataCollection : TDto[] |  null;
     private ResultType : number;
     private Status : Message|null;
     private Messages: Array<Message>| null;
+
+    private SocketId: string;
 
     public getRequestId(): string {
         return this.RequestId;
@@ -18,11 +21,11 @@ export class ResponseModel<T> {
         this.RequestId = RequestId;
     }
 
-    public getDataCollection(): Array<T>|null {
+    public getDataCollection(): Array<TDto>|null {
         return this.DataCollection;
     }
 
-    public setDataCollection(DataCollection: Array<T>): void {
+    public setDataCollection(DataCollection: TDto[]): void {
         this.DataCollection = DataCollection;
     }
 
@@ -30,9 +33,9 @@ export class ResponseModel<T> {
         return this.ResultType;
     }
 
-    public getData(): T|null{
+    public getData(): TDto|null{
         let t_temp = this.DataCollection!=null && this.DataCollection[0]!=null?
-        this.DataCollection[0] as T: null;
+        this.DataCollection[0] as TDto: null;
         return t_temp;
     }
 
@@ -80,7 +83,7 @@ export class ResponseModel<T> {
 
 
 
-    constructor(requestId: string,data:Array<T>|null,resultType:ServiceOperationResultType,
+    constructor(requestId: string,data:Array<TDto>|null,resultType:ServiceOperationResultType,
         errorCode:string,statusMessage:string|null,localizedStatusMessage : string|null, 
         message : Array<Message>| null) {
 
@@ -89,27 +92,26 @@ export class ResponseModel<T> {
             this.ResultType = resultType;
             this.Status = new Message(errorCode, statusMessage, localizedStatusMessage, null);
         this.Messages = message;
-            
 
     }
     // Get(id:number):ResponseModel<TDto>|null
-    CreateFailureResult(requestId: string, message: string, messages: Array<Message>, localizedMessage: string = "", validationCode: string = ""): ResponseModel<T> | null{
-        
-        return new ResponseModel<T>(requestId, null,ServiceOperationResultType.failure, validationCode, message, localizedMessage, messages);
+    CreateFailureResult(requestId: string, message: string, messages: Array<Message>, localizedMessage: string = "", validationCode: string = ""): ResponseModel<TDto> | null{
+
+        return new ResponseModel<TDto>(requestId, null,ServiceOperationResultType.failure, validationCode, message, localizedMessage, messages);
 //return new ResponseModel<T>(requestId, null
 
     }
-    CreateErrorResult(requestId:string , errorCode:string ,message:string="",localizedMessage:string=""):ResponseModel<T> 
+    CreateErrorResult(requestId:string , errorCode:string ,message:string="",localizedMessage:string=""):ResponseModel<TDto> 
     {
-        return new ResponseModel<T>(requestId, null, ServiceOperationResultType.error, errorCode, message,localizedMessage, null);
+        return new ResponseModel<TDto>(requestId, null, ServiceOperationResultType.error, errorCode, message,localizedMessage, null);
     }
     // CreateErrorResult1(requestId:string , errorCode:string , message:string,localizedMessage:string=""):ResponseModel<T> 
     // {
     //     return new ResponseModel<T>(requestId, null, ServiceOperationResultType.error, errorCode, "","", null);
     // }
-    CreateSuccessResult(requestId: string, data: Array<T>, message: string|null, messages: Array<Message>|null, localizedMessage:string|null) {
+    CreateSuccessResult(requestId: string, data: Array<TDto>, message: string|null, messages: Array<Message>|null, localizedMessage:string|null) {
         
-        return new ResponseModel<T>(requestId, data, ServiceOperationResultType.success, "200", message, localizedMessage!=null?localizedMessage:null, messages )
+        return new ResponseModel<TDto>(requestId, data, ServiceOperationResultType.success, "200", message, localizedMessage!=null?localizedMessage:null, messages )
     }
 
     public echo<D>(arg: D): D{
