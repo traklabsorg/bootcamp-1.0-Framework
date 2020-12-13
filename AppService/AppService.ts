@@ -12,6 +12,7 @@ import { DtoBase } from "../entities/DtoBase";
 import { EntityBase } from "../entities/EntityBase";
 import { RequestModelQuery } from "../entities/RequestModelQuery";
 import { RequestModel } from "../entities/RequestModel";
+import { plainToClass } from "class-transformer";
 const objectMapper = require('object-mapper');
 var pluralize = require('pluralize')
 
@@ -26,7 +27,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
   private dtoToEntitymap = {};
   // private type: ObjectType<TEntity>;
   
-  constructor(private readonly genericRepository: Repository<TEntity>, private type3: ObjectType<TEntity>,entityMap: Record<string, unknown>, dtoMap: Record<string, unknown>, entityToDtoMap: Record<string, unknown>, dtoToEntityMap: Record<string, unknown>) {
+  constructor(private readonly genericRepository: Repository<TEntity>, private type3: ObjectType<TEntity>,private entityClassType:ClassType<TEntity>,private dtoClassType:ClassType<TDto>,entityMap: Record<string, unknown>, dtoMap: Record<string, unknown>, entityToDtoMap: Record<string, unknown>, dtoToEntityMap: Record<string, unknown>) {
     this.entityMap = entityMap;
     this.dtoMap = dtoMap;
     this.entityToDtoMap = entityToDtoMap;
@@ -50,17 +51,59 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
     this.dtoToEntitymap = map;
   }
 
-
-  getByIds(ids: any[]): Promise<TEntity[]> {
-    console.log("ids...." + JSON.stringify(ids));
-    return this.genericRepository.findByIds(ids);
+  async mapToDto(entities: TEntity[]): Promise<TDto[]>{
+    try {
+      let result: TDto[];
+      let dto: TDto;
+      Promise.all(entities.map(async (entity: TEntity) => {
+        await result.push(plainToClass(this.dtoClassType,objectMapper(entity,this.entityToDtoMap)))
+      }))
+      
+      return result;
+    }
+    catch (error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
-  getAll(): Promise<TEntity[]> {
+  async mapToEntity(dtos: TDto[]): Promise<TEntity[]>{
     try {
-      let result = this.genericRepository.find();
-      console.log("result is....." + JSON.stringify(result));
+      let result: TEntity[];
+      let entity:TEntity;
+      Promise.all(dtos.map(async (dto: TDto) => {
+        await result.push(plainToClass(this.entityClassType,objectMapper(entity,this.entityToDtoMap)))
+      }))
+
       return result;
+    }
+    catch (error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async getByIds(id: any[]): Promise<ResponseModel<TDto>>{
+    try {
+      let final_result: ResponseModel<TDto> = new ResponseModel("123", null, null, "123", "123", "gft", null);
+      console.log("ids...." + JSON.stringify(id));
+      final_result.setDataCollection(await this.mapToDto(await this.genericRepository.findByIds(id)))
+      return final_result;
+    }
+    catch (error) {
+      console.log("Error is....." + error);
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    
+  }
+
+  async getAll(): Promise<ResponseModel<TDto>> {
+    try {
+      let result = await this.genericRepository.find();
+
+      
+      let final_result: ResponseModel<TDto> = new ResponseModel("123", null, null, "123", "123", "gft", null);
+      console.log("result is....." + JSON.stringify(result));
+      final_result.setDataCollection(await this.mapToDto(result));
+      return final_result;
     }
     catch (error) {
       console.log("Error is....." + error);
@@ -95,17 +138,22 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
       return final_result;
     }
     catch (error){
-      console.log("Error occured while insering groups....." + error);
+      console.log("Error occured while inserting groups....." + error);
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     };
     
   }
 
-  async deleteById(ids: any[]): Promise<TEntity[]> {
-    const entities: TEntity[] = await this.getByIds(ids);
-    if (entities.length != 0) {
-      await this.genericRepository.remove(entities);
-      return entities;
+  async deleteById(ids: any[]): Promise<ResponseModel<TDto>> {
+    const entities =  await this.getByIds(ids);
+    let final_result: ResponseModel<TDto> = new ResponseModel("123", null, null, "123", "123", "gft", null);
+
+    if (entities.getDataCollection.length != 0) {
+      let result = entities.getDataCollection();
+      console.log("Result is....." + result);
+      await this.genericRepository.remove(await this.mapToEntity(result));
+      final_result.setDataCollection(entities.getDataCollection())
+      return final_result;
     }
     // return await this.genericRepository.remove(ids)
     throw new HttpException("No such id found ", HttpStatus.NOT_FOUND);

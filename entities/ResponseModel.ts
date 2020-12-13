@@ -21,7 +21,7 @@ export class ResponseModel<TDto extends DtoBase> {
         this.RequestId = RequestId;
     }
 
-    public getDataCollection(): Array<TDto>|null {
+    public getDataCollection(): TDto[]|null {
         return this.DataCollection;
     }
 
