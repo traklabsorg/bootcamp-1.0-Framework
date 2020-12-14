@@ -13,8 +13,19 @@ import { EntityBase } from "../entities/EntityBase";
 import { RequestModelQuery } from "../entities/RequestModelQuery";
 import { RequestModel } from "../entities/RequestModel";
 import { plainToClass } from "class-transformer";
+import { HttpService } from "@nestjs/common";
+import { map } from 'rxjs/operators';
+import { DATABASE_HOST, DATABASE_NAME, DATABASE_PASSWORD, DATABASE_PORT, DATABASE_TYPE, DATABASE_USERNAME, GROUP_MICROSERVICE_URI } from '../../../config';
+// const config = require("../../../config")
 const objectMapper = require('object-mapper');
 var pluralize = require('pluralize')
+var LRU = require("lru-cache")
+  , options = { max: 500
+              , length: function (n, key) { return n * 2 + key.length }
+              , dispose: function (key, n) { n.close() }
+              , maxAge: 1000 * 60 * 60 }
+  , cache = new LRU(options)
+  , otherCache = new LRU(100) // sets just the max size
 
 @Injectable()
 export default class AppService<TEntity extends EntityBase, TDto extends DtoBase>{
@@ -25,15 +36,40 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
   private entityToDtoMap = {};
 
   private dtoToEntitymap = {};
+  private dict = {};
   // private type: ObjectType<TEntity>;
   
-  constructor(private readonly genericRepository: Repository<TEntity>, private type3: ObjectType<TEntity>,private entityClassType:ClassType<TEntity>,private dtoClassType:ClassType<TDto>,entityMap: Record<string, unknown>, dtoMap: Record<string, unknown>, entityToDtoMap: Record<string, unknown>, dtoToEntityMap: Record<string, unknown>) {
+  constructor(public http:HttpService,private readonly genericRepository: Repository<TEntity>, private type3: ObjectType<TEntity>,private entityClassType:ClassType<TEntity>,private dtoClassType:ClassType<TDto>,entityMap: Record<string, unknown>, dtoMap: Record<string, unknown>, entityToDtoMap: Record<string, unknown>, dtoToEntityMap: Record<string, unknown>) {
     this.entityMap = entityMap;
     this.dtoMap = dtoMap;
     this.entityToDtoMap = entityToDtoMap;
     this.dtoToEntitymap = dtoToEntityMap;
 
   }
+
+  getTenantId(communityUrl: string): any{
+    
+    const headersRequest = {
+      'Content-Type': 'application/json',
+      'Authorization': `Basic `+communityUrl,
+  };
+    console.log("Inside Tenant Id......uri is....." + GROUP_MICROSERVICE_URI + "/tenant/" + communityUrl);
+    if (!cache.get(communityUrl))
+    {
+      return this.http.get(GROUP_MICROSERVICE_URI + "/tenant"+ "/" + communityUrl,{ headers: headersRequest })
+      .pipe(
+        map(response => {
+          cache.set(communityUrl, response.data );
+          response.data
+        })
+      );
+    }
+    else{
+      console.log("dict is......" + this.dict);
+      return cache.get(communityUrl);
+    }
+   
+}
 
   
   addDtoMap(map: Record<string, unknown>) {
