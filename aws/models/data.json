@@ -1,0 +1,265 @@
+{
+  "Topics": [
+    {
+      "TopicName": "CHANNEL_ADD",
+      "Publishers": ["API_GATEWAY_SERVICE"],
+      "Subscribers": [
+        {
+          "Service": "CHANNEL_SERVICE",
+          "Function": "InsertChannel",
+          "OnSuccessTopicsToPush": ["CHANNEL_ADDED"],
+          "OnFailureTopicsToPush": ["ERROR_RECEIVER"]
+        }
+      ]
+    },
+    {
+      "TopicName": "CHANNEL_UPDATE",
+      "Publishers": ["API_GATEWAY_SERVICE"],
+      "Subscribers": [
+        {
+          "Service": "CHANNEL_SERVICE",
+          "Function": "UpdateChannel",
+          "OnSuccessTopicsToPush": ["CHANNEL_UPDATED"],
+          "OnFailureTopicsToPush": ["ERROR_RECEIVER"]
+        }
+      ]
+    },
+    {
+      "TopicName": "CHANNEL_DELETE",
+      "Publishers": ["API_GATEWAY_SERVICE"],
+      "Subscribers": [
+        {
+          "Service": "CHANNEL_SERVICE",
+          "Function": "DeleteChannel",
+          "OnSuccessTopicsToPush": ["CHANNEL_DELETED"],
+          "OnFailureTopicsToPush": ["ERROR_RECEIVER"]
+        }
+      ]
+    },
+
+    {
+      "TopicName": "CHANNEL_ADDED",
+      "Publishers": ["CHANNEL_SERVICE"],
+      "Subscribers": [
+        {
+          "Service": "NOTIFICATION_SERVICE",
+          "Function": "SendChannelAddedNotificationToAdmin",
+          "OnSuccessTopicsToPush": ["NOTIFICATION_ADDED"],
+          "OnFailureTopicsToPush": ["ERROR_RECEIVER"]
+        },
+        {
+          "Service": "API_GATEWAY_SERVICE",
+          "Function": "FunctionNameToAcknowledgeUIHandle",
+          "OnSuccessTopicsToPush": [],
+          "OnFailureTopicsToPush": ["ERROR_RECEIVER"]
+        },
+        {
+          "Service": "BILLING_SERVICE",
+          "Function": "AddBillPlanForCurrentChannel",
+          "OnSuccessTopicsToPush": ["NOTIFICATION_ADD"],
+          "OnFailureTopicsToPush": ["ERROR_RECEIVER", "NOTIFICATION_ADD"]
+        }
+      ]
+    },
+
+    {
+      "TopicName": "CHANNEL_UPDATED",
+      "Publishers": ["CHANNEL_SERVICE"],
+      "Subscribers": [
+        {
+          "Service": "NOTIFICATION_SERVICE",
+          "Function": "SendChannelUpdatedNotificationToAdmin",
+          "OnSuccessTopicsToPush": ["NOTIFICATION_ADDED"],
+          "OnFailureTopicsToPush": ["ERROR_RECEIVER"]
+        },
+        {
+          "Service": "API_GATEWAY_SERVICE",
+          "Function": "FunctionNameToAcknowledgeUIHandle",
+          "OnSuccessTopicsToPush": [],
+          "OnFailureTopicsToPush": ["ERROR_RECEIVER"]
+        },
+        {
+          "Service": "BILLING_SERVICE",
+          "Function": "UpdateBillPlanForCurrentChannel",
+          "OnSuccessTopicsToPush": ["NOTIFICATION_ADD"],
+          "OnFailureTopicsToPush": ["ERROR_RECEIVER", "NOTIFICATION_ADD"]
+        }
+      ]
+    },
+    {
+      "TopicName": "CHANNEL_DELETED",
+      "Publishers": ["CHANNEL_SERVICE"],
+      "Subscribers": [
+        {
+          "Service": "NOTIFICATION_SERVICE",
+          "Function": "SendChannelDeletedNotificationToAdmin",
+          "OnSuccessTopicsToPush": ["NOTIFICATION_ADDED"],
+          "OnFailureTopicsToPush": ["ERROR_RECEIVER"]
+        },
+        {
+          "Service": "API_GATEWAY_SERVICE",
+          "Function": "FunctionNameToAcknowledgeUIHandle",
+          "OnSuccessTopicsToPush": [],
+          "OnFailureTopicsToPush": ["ERROR_RECEIVER"]
+        }
+      ]
+    },
+
+    {
+      "TopicName": "GROUP_ADD",
+      "Publishers": ["API_GATEWAY_SERVICE"],
+      "Subscribers": [
+        {
+          "Service": "GROUP_SERVICE",
+          "Function": "InsertGroup",
+          "OnSuccessTopicsToPush": ["GROUP_ADDED"],
+          "OnFailureTopicsToPush": ["ERROR_RECEIVER"]
+        }
+      ]
+    },
+    {
+      "TopicName": "GROUP_UPDATE",
+      "Publishers": ["API_GATEWAY_SERVICE"],
+      "Subscribers": [
+        {
+          "Service": "GROUP_SERVICE",
+          "Function": "UpdateGroup",
+          "OnSuccessTopicsToPush": ["GROUP_UPDATED"],
+          "OnFailureTopicsToPush": ["ERROR_RECEIVER"]
+        }
+      ]
+    },
+    {
+      "TopicName": "GROUP_DELETE",
+      "Publishers": ["API_GATEWAY_SERVICE"],
+      "Subscribers": [
+        {
+          "Service": "GROUP_SERVICE",
+          "Function": "DeleteGroup",
+          "OnSuccessTopicsToPush": ["GROUP_DELETED"],
+          "OnFailureTopicsToPush": ["ERROR_RECEIVER"]
+        }
+      ]
+    },
+
+    {
+      "TopicName": "GROUP_ADDED",
+      "Publishers": ["GROUP_SERVICE"],
+      "Subscribers": [
+        {
+          "Service": "NOTIFICATION_SERVICE",
+          "Function": "SendGroupAddedNotificationToAdmin",
+          "OnSuccessTopicsToPush": ["NOTIFICATION_ADDED"],
+          "OnFailureTopicsToPush": ["ERROR_RECEIVER"]
+        },
+        {
+          "Service": "API_GATEWAY_SERVICE",
+          "Function": "FunctionNameToAcknowledgeUIHandle",
+          "OnSuccessTopicsToPush": [],
+          "OnFailureTopicsToPush": ["ERROR_RECEIVER"]
+        }
+      ]
+    },
+
+    {
+      "TopicName": "GROUP_UPDATED",
+      "Publishers": ["GROUP_SERVICE"],
+      "Subscribers": [
+        {
+          "Service": "NOTIFICATION_SERVICE",
+          "Function": "SendGroupUpdatedNotificationToAdmin",
+          "OnSuccessTopicsToPush": ["NOTIFICATION_ADDED"],
+          "OnFailureTopicsToPush": ["ERROR_RECEIVER"]
+        },
+        {
+          "Service": "API_GATEWAY_SERVICE",
+          "Function": "FunctionNameToAcknowledgeUIHandle",
+          "OnSuccessTopicsToPush": [],
+          "OnFailureTopicsToPush": ["ERROR_RECEIVER"]
+        }
+      ]
+    },
+    {
+      "TopicName": "GROUP_DELETED",
+      "Publishers": ["GROUP_SERVICE"],
+      "Subscribers": [
+        {
+          "Service": "NOTIFICATION_SERVICE",
+          "Function": "SendGroupDeletedNotificationToAdmin",
+          "OnSuccessTopicsToPush": ["NOTIFICATION_ADDED"],
+          "OnFailureTopicsToPush": ["ERROR_RECEIVER"]
+        },
+        {
+          "Service": "API_GATEWAY_SERVICE",
+          "Function": "FunctionNameToAcknowledgeUIHandle",
+          "OnSuccessTopicsToPush": [],
+          "OnFailureTopicsToPush": ["ERROR_RECEIVER"]
+        }
+      ]
+    },
+
+    {
+      "TopicName": "SUBSCRIPTION_ADD",
+      "Publishers": ["API_GATEWAY_SERVICE"],
+      "Subscribers": [
+        {
+          "Service": "GROUP_SERVICE",
+          "Function": "AddSubscription",
+          "OnSuccessTopicsToPush": ["SUBSCRIPTION_ADDED", "PAYMENT_ADD"],
+          "OnFailureTopicsToPush": ["ERROR_RECEIVER"]
+        }
+      ]
+    },
+
+    {
+      "TopicName": "SUBSCRIPTION_ADDED",
+      "Publishers": ["GROUP_SERVICE"],
+      "Subscribers": [
+        {
+          "Service": "PAYMENT_SERVICE",
+          "Function": "AddPaymentForGivenSubscription",
+          "OnSuccessTopicsToPush": ["PAYMENT_ADD"],
+          "OnFailureTopicsToPush": ["ERROR_RECEIVER"]
+        },
+        {
+          "Service": "API_GATEWAY_SERVICE",
+          "Function": "AcknowledgeToUIForSubscriptionAdded",
+          "OnSuccessTopicsToPush": ["SUBSCRIPTION_ADDED", "PAYMENT_ADD"],
+          "OnFailureTopicsToPush": ["ERROR_RECEIVER"]
+        }
+      ]
+    },
+
+    {
+      "TopicName": "PAYMENT_ADD",
+      "Publishers": ["PAYMENT_SERVICE"],
+      "Subscribers": [
+        {
+          "Service": "PAYMENT_SERVICE",
+          "Function": "InsertPayments",
+          "OnSuccessTopicsToPush": ["PAYMENT_ADDED"],
+          "OnFailureTopicsToPush": ["ERROR_RECEIVER"]
+        }
+      ]
+    },
+
+    {
+      "TopicName": "PAYMENT_ADDED",
+      "Publishers": ["PAYMENT_SERVICE"],
+      "Subscribers": [
+        {
+          "Service": "GROUP_SERVICE",
+          "Function": "UpdateSubscriptionWithPaymentDetails",
+          "OnSuccessTopicsToPush": ["SUBSCRIPTION_UPDATED"],
+          "OnFailureTopicsToPush": ["ERROR_RECEIVER"]
+        },
+        {
+          "Service": "API_GATEWAY_SERVICE",
+          "Function": "AcknowledgeToUIForPaymentAdded",
+          "OnSuccessTopicsToPush": [],
+          "OnFailureTopicsToPush": ["ERROR_RECEIVER"]
+        }
+      ]
+    }
+  ]
+}

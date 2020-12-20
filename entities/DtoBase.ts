@@ -5,7 +5,7 @@
 export class DtoBase {
 
   constructor() {
-      // this.Id = 5;
+      this.Id = 5;
       this.ModifiedBy= 0;
       this.CreatedBy = 0;
       this.AutoOffset = 0;
@@ -17,7 +17,7 @@ export class DtoBase {
 
   //let date = new Date(); //gives current date in date format
   // @PrimaryGeneratedColumn({name:'id'})
-  // Id: number;
+  Id: number;
 
   // @CreateDateColumn({name:'creation_date',nullable:false, type: "timestamp with time zone", default: () => "CURRENT_TIMESTAMP" })
   CreationDate: Date;

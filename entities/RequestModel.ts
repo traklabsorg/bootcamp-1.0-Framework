@@ -14,6 +14,9 @@ export class RequestModel<TDto  extends DtoBase> extends RequestModelBase{
     
     public SocketId: string;
 
+    public token: string;
+    public CommunityUrl: string;
+
 
     constructor(){
         //TODO: GENERATE THE TENANT ID, CULTURE AND REQUEST ID INSIDE BASE CLASS
@@ -22,6 +25,9 @@ export class RequestModel<TDto  extends DtoBase> extends RequestModelBase{
         this.Error = '';
         this.DataCollection = new Array<TDto>();
         this.SocketId = "";
+        this.token = "";
+        this.CommunityUrl = "sample_community_url";
+
        // let filter = new Filter();
        // filter.setConditions(new Array<Condition>());
     };
@@ -34,6 +40,8 @@ export class RequestModel<TDto  extends DtoBase> extends RequestModelBase{
         this.DataCollection[0] as TDto: null;
         return t_temp;
     };
+
+    
 
     CreateRequestModel():RequestModel<TDto>{
         let requestModel =  new RequestModel<TDto>();

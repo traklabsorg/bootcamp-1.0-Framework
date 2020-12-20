@@ -16,6 +16,7 @@ import { plainToClass } from "class-transformer";
 import { HttpService } from "@nestjs/common";
 import { map } from 'rxjs/operators';
 import { DATABASE_HOST, DATABASE_NAME, DATABASE_PASSWORD, DATABASE_PORT, DATABASE_TYPE, DATABASE_USERNAME, GROUP_MICROSERVICE_URI } from '../../../config';
+import { SNS_SQS } from "../aws/models/SNS_SQS";
 // const config = require("../../../config")
 const objectMapper = require('object-mapper');
 var pluralize = require('pluralize')
@@ -37,6 +38,15 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
 
   private dtoToEntitymap = {};
   private dict = {};
+  public sns_sqs: any;
+
+  // private group_add_publish_topics = [];
+  // private group_add_subscribe_topics = [];
+  // private group_update_publish_topics = [];
+  // private group_update_subscribe_topics = [];
+  // private group_delete_publish_topics = [];
+  // private group_subscribe_publish_topics = [];
+
   // private type: ObjectType<TEntity>;
   
   constructor(public http:HttpService,private readonly genericRepository: Repository<TEntity>, private type3: ObjectType<TEntity>,private entityClassType:ClassType<TEntity>,private dtoClassType:ClassType<TDto>,entityMap: Record<string, unknown>, dtoMap: Record<string, unknown>, entityToDtoMap: Record<string, unknown>, dtoToEntityMap: Record<string, unknown>) {
@@ -44,8 +54,13 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
     this.dtoMap = dtoMap;
     this.entityToDtoMap = entityToDtoMap;
     this.dtoToEntitymap = dtoToEntityMap;
-
+    // this.sns_sqs = SNS_SQS.getInstance();
+    
   }
+  
+
+
+
 
   getTenantId(communityUrl: string): any{
     
@@ -70,7 +85,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
     }
    
 }
-
+  
   
   addDtoMap(map: Record<string, unknown>) {
     this.entityMap = map;
@@ -89,7 +104,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
 
   async mapToDto(entities: TEntity[]): Promise<TDto[]>{
     try {
-      let result: TDto[];
+      let result: TDto[] = [];
       let dto: TDto;
       Promise.all(entities.map(async (entity: TEntity) => {
         await result.push(plainToClass(this.dtoClassType,objectMapper(entity,this.entityToDtoMap)))
@@ -104,11 +119,13 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
 
   async mapToEntity(dtos: TDto[]): Promise<TEntity[]>{
     try {
-      let result: TEntity[];
-      let entity:TEntity;
+      let result: TEntity[] = [];
+      let entity: TEntity;
+      
       Promise.all(dtos.map(async (dto: TDto) => {
-        await result.push(plainToClass(this.entityClassType,objectMapper(entity,this.entityToDtoMap)))
+                await result.push(plainToClass(this.entityClassType,objectMapper(dto,this.entityToDtoMap)))
       }))
+
 
       return result;
     }
@@ -119,7 +136,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
 
   async getByIds(id: any[]): Promise<ResponseModel<TDto>>{
     try {
-      let final_result: ResponseModel<TDto> = new ResponseModel("123", null, null, "123", "123", "gft", null);
+      let final_result: ResponseModel<TDto> = new ResponseModel("123", null, null, "123", "123", "gft", null,null,null);
       console.log("ids...." + JSON.stringify(id));
       final_result.setDataCollection(await this.mapToDto(await this.genericRepository.findByIds(id)))
       return final_result;
@@ -136,7 +153,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
       let result = await this.genericRepository.find();
 
       
-      let final_result: ResponseModel<TDto> = new ResponseModel("123", null, null, "123", "123", "gft", null);
+      let final_result: ResponseModel<TDto> = new ResponseModel("123", null, null, "123", "123", "gft", null,null,null);
       console.log("result is....." + JSON.stringify(result));
       final_result.setDataCollection(await this.mapToDto(result));
       return final_result;
@@ -153,12 +170,15 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
       var result: TDto[] = [];
     
       let result1: any;
-      let final_result: ResponseModel<TDto> = new ResponseModel("123", null, null, "123", "123", "gft", null);
+      //entity
+      let requestGuid = entity.RequestGuid;
+     
+      // let final_result: ResponseModel<TDto> = new ResponseModel(entity.RequestGuid,entity.SocketId, null, null, "123", "123", "gft", null);
       
       await Promise.all(entity.DataCollection.map(async (entity_sample) => {
-        console.log("Entity sample is......" + JSON.stringify(entity_sample));
+        // console.log("Entity sample is......" + JSON.stringify(entity_sample));
         console.log("Map is......" + JSON.stringify(this.entityMap));
-        console.log("result....." + objectMapper(entity_sample, this.entityMap));
+        // console.log("result....." + objectMapper(entity_sample, this.entityMap));
       
         result1 = await this.genericRepository.save(objectMapper(entity_sample, this.entityMap))
         console.log("result is......." + JSON.stringify(result1));
@@ -170,30 +190,70 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
       );
       console.log("Returning result1....." + JSON.stringify(result));
       // result.forEach((entity:TEntity)=>)
+      // let successResponseModel = ResponseModel<TDto>
+      let final_result:ResponseModel<TDto> = new ResponseModel(entity.RequestGuid,null,ServiceOperationResultType.success,"200",null,null,null,entity.SocketId,entity.CommunityUrl)
       final_result.setDataCollection(result);
       return final_result;
+      
+      
     }
     catch (error){
       console.log("Error occured while inserting groups....." + error);
-      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+      let final_result:ResponseModel<TDto> = new ResponseModel(entity.RequestGuid,null,ServiceOperationResultType.error,"500",null,null,null,entity.SocketId,entity.CommunityUrl)
+
+      throw new HttpException(final_result, HttpStatus.INTERNAL_SERVER_ERROR);
     };
     
   }
 
   async deleteById(ids: any[]): Promise<ResponseModel<TDto>> {
-    const entities =  await this.getByIds(ids);
-    let final_result: ResponseModel<TDto> = new ResponseModel("123", null, null, "123", "123", "gft", null);
+    const entities = await this.getByIds(ids);
+    console.log("Entites to be deleted are......" + JSON.stringify(entities));
+    
+    if (entities.getDataCollection().length != 0) {
+      let result = await this.mapToEntity(entities.getDataCollection());
+      console.log("Result is....." + JSON.stringify(result));
+      await this.genericRepository.remove(result);
+      let final_result:ResponseModel<TDto> = new ResponseModel(null,null,null,"200",null,null,null,null,null)
 
-    if (entities.getDataCollection.length != 0) {
-      let result = entities.getDataCollection();
-      console.log("Result is....." + result);
-      await this.genericRepository.remove(await this.mapToEntity(result));
       final_result.setDataCollection(entities.getDataCollection())
       return final_result;
     }
     // return await this.genericRepository.remove(ids)
     throw new HttpException("No such id found ", HttpStatus.NOT_FOUND);
   }
+
+  async deleteByIds(entity: RequestModel<TDto>): Promise<ResponseModel<TDto>> {
+    try {
+      await console.log("Inside delete of generic repository...entity is...." + JSON.stringify(entity));
+      var result: TDto[] = [];
+    
+      let result1: any;
+      //entity
+      const entities = await this.getByIds(entity.DataCollection)
+     
+      // let final_result: ResponseModel<TDto> = new ResponseModel(entity.RequestGuid,entity.SocketId, null, null, "123", "123", "gft", null);
+      
+      this.genericRepository.remove(await this.mapToEntity(entities.getDataCollection()));
+      console.log("Returning result1....." + JSON.stringify(result));
+      // result.forEach((entity:TEntity)=>)
+      // let successResponseModel = ResponseModel<TDto>
+      let final_result:ResponseModel<TDto> = new ResponseModel(entity.RequestGuid,null,ServiceOperationResultType.success,"200",null,null,null,entity.SocketId,entity.CommunityUrl)
+      final_result.setDataCollection(entities.getDataCollection());
+      return final_result;
+      
+      
+    }
+    catch (error){
+      console.log("Error occured while inserting groups....." + error);
+      let final_result:ResponseModel<TDto> = new ResponseModel(entity.RequestGuid,null,ServiceOperationResultType.error,"500",null,null,null,entity.SocketId,entity.CommunityUrl)
+
+      throw new HttpException(final_result, HttpStatus.INTERNAL_SERVER_ERROR);
+    };
+    
+  }
+
+
 
   // async updateById(entities: TEntity[]): Promise<TEntity[]> {
   //   this.genericRepository.createQueryBuilder("Entity").
@@ -302,9 +362,10 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
     //Mapping to convert  entities to dtos
     let dtos = new Array<TDto>();
     
-    let responseModel = new ResponseModel<TDto>(requestModel.RequestGuid,
-      dtos,
-      ServiceOperationResultType.success, '', '', '', null);
+    // let responseModel = new ResponseModel<TDto>(requestModel.RequestGuid,
+    //   dtos,
+    //   ServiceOperationResultType.success, '', '', '', null);
+    let responseModel = new ResponseModel<TDto>(null, null, null, "200", null, null, null, null, null);
 
 
 

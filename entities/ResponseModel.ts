@@ -11,7 +11,24 @@ export class ResponseModel<TDto extends DtoBase> {
     private Status : Message|null;
     private Messages: Array<Message>| null;
 
-    private SocketId: string;
+    private SocketId: string; 
+
+    private CommunityUrl: string;
+
+    constructor(requestId: string,data:Array<TDto>|null,resultType:ServiceOperationResultType,
+        errorCode:string,statusMessage:string|null,localizedStatusMessage : string|null, 
+        message : Array<Message>| null,socketId:string,communityUrl:string) {
+
+            this.RequestId = requestId;
+            this.DataCollection = data;
+            this.ResultType = resultType;
+            this.Status = new Message(errorCode, statusMessage, localizedStatusMessage, null);
+            this.Messages = message;
+            this.SocketId = socketId;
+            this.CommunityUrl = communityUrl;
+
+
+    }
 
     public getRequestId(): string {
         return this.RequestId;
@@ -19,6 +36,14 @@ export class ResponseModel<TDto extends DtoBase> {
 
     public setRequestId(RequestId: string): void {
         this.RequestId = RequestId;
+    }
+
+    public getCommunityUrl(): string{
+        return this.CommunityUrl;
+    }
+
+    public setCommunityUrl(communityUrl: string) {
+        this.CommunityUrl = communityUrl;
     }
 
     public getDataCollection(): TDto[]|null {
@@ -65,7 +90,12 @@ export class ResponseModel<TDto extends DtoBase> {
     // public getStatus(): Message {
     //     return this.Status;
     // }
-
+    public getSocketId(): string{
+        return this.SocketId;
+    }
+    public setSocketId(socketId: string): void{
+        this.SocketId = socketId;
+    }
     public setStatus(Status: Message): void {
         this.Status = Status;
     }
@@ -78,40 +108,25 @@ export class ResponseModel<TDto extends DtoBase> {
     //     this.Messages = Messages;
     // }
 
-
-
-
-
-
-    constructor(requestId: string,data:Array<TDto>|null,resultType:ServiceOperationResultType,
-        errorCode:string,statusMessage:string|null,localizedStatusMessage : string|null, 
-        message : Array<Message>| null) {
-
-            this.RequestId = requestId;
-            this.DataCollection = data;
-            this.ResultType = resultType;
-            this.Status = new Message(errorCode, statusMessage, localizedStatusMessage, null);
-        this.Messages = message;
-
-    }
+   
     // Get(id:number):ResponseModel<TDto>|null
-    CreateFailureResult(requestId: string, message: string, messages: Array<Message>, localizedMessage: string = "", validationCode: string = ""): ResponseModel<TDto> | null{
+     CreateFailureResult(requestId: string, message: string, messages: Array<Message>, localizedMessage: string = "", validationCode: string = "",socketId: string = "",communityUrl: string = ""): ResponseModel<TDto> | null{
 
-        return new ResponseModel<TDto>(requestId, null,ServiceOperationResultType.failure, validationCode, message, localizedMessage, messages);
+        return new ResponseModel<TDto>(requestId, null,ServiceOperationResultType.failure, validationCode, message, localizedMessage, messages,socketId,communityUrl);
 //return new ResponseModel<T>(requestId, null
 
     }
-    CreateErrorResult(requestId:string , errorCode:string ,message:string="",localizedMessage:string=""):ResponseModel<TDto> 
+     CreateErrorResult(requestId:string , errorCode:string ,message:string="",localizedMessage:string="",socketId: string = "",communityUrl: string = ""):ResponseModel<TDto> 
     {
-        return new ResponseModel<TDto>(requestId, null, ServiceOperationResultType.error, errorCode, message,localizedMessage, null);
+        return new ResponseModel<TDto>(requestId, null, ServiceOperationResultType.error, errorCode, message,localizedMessage, null,socketId,communityUrl);
     }
     // CreateErrorResult1(requestId:string , errorCode:string , message:string,localizedMessage:string=""):ResponseModel<T> 
     // {
     //     return new ResponseModel<T>(requestId, null, ServiceOperationResultType.error, errorCode, "","", null);
     // }
-    CreateSuccessResult(requestId: string, data: Array<TDto>, message: string|null, messages: Array<Message>|null, localizedMessage:string|null) {
+     CreateSuccessResult(requestId: string, data: Array<TDto>, message: string|null, messages: Array<Message>|null, localizedMessage:string|null,socketId: string = "",communityUrl: string = "") {
         
-        return new ResponseModel<TDto>(requestId, data, ServiceOperationResultType.success, "200", message, localizedMessage!=null?localizedMessage:null, messages )
+        return new ResponseModel<TDto>(requestId, data, ServiceOperationResultType.success, "200", message, localizedMessage!=null?localizedMessage:null, messages,socketId,communityUrl )
     }
 
     public echo<D>(arg: D): D{

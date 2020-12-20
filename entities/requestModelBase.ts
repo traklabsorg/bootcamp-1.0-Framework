@@ -3,6 +3,28 @@ import {CultureInfo} from "./cultureInfo";
 
 export abstract class RequestModelBase{
 
+	private UniqueConsumerIdentifier!: string;
+    private AccessToken!: string;
+    private UserName!: string;
+    private TenantId!: number;
+    private IsRequestFromBackgroundService!: boolean;
+    private version!: string;
+    public RequestGuid!: string;
+    private CultureInformation!: string;
+
+    // private guid_obj = new Guid();
+    // private culture_obj = new CultureInfo();
+
+    RequestModelBase(requestGuid:string){
+        this.RequestGuid = requestGuid!=null?requestGuid:"";
+    }
+
+	constructor(tenantId:number,culture:string,requestId:string){
+		this.TenantId = tenantId;
+		this.CultureInformation = culture;
+		this.RequestGuid = requestId;
+	}
+
 	public getUniqueConsumerIdentifier(): string {
 		return this.UniqueConsumerIdentifier;
 	}
@@ -51,27 +73,7 @@ export abstract class RequestModelBase{
 		this.version = value;
     }
     
-    private UniqueConsumerIdentifier!: string;
-    private AccessToken!: string;
-    private UserName!: string;
-    private TenantId!: number;
-    private IsRequestFromBackgroundService!: boolean;
-    private version!: string;
-    public RequestGuid!: string;
-    private CultureInformation!: string;
-
-    // private guid_obj = new Guid();
-    // private culture_obj = new CultureInfo();
-
-    RequestModelBase(requestGuid:string){
-        this.RequestGuid = requestGuid!=null?requestGuid:"";
-    }
-
-	constructor(tenantId:number,culture:string,requestId:string){
-		this.TenantId = tenantId;
-		this.CultureInformation = culture;
-		this.RequestGuid = requestId;
-	}
+    
 
 
 }
