@@ -16,6 +16,7 @@ export class RequestModel<TDto  extends DtoBase> extends RequestModelBase{
 
     public token: string;
     public CommunityUrl: string;
+    public RequestGuid: string;
 
 
     constructor(){
@@ -27,6 +28,7 @@ export class RequestModel<TDto  extends DtoBase> extends RequestModelBase{
         this.SocketId = "";
         this.token = "";
         this.CommunityUrl = "sample_community_url";
+        this.RequestGuid = "sample_guid";
 
        // let filter = new Filter();
        // filter.setConditions(new Array<Condition>());

@@ -17,6 +17,7 @@ import { HttpService } from "@nestjs/common";
 import { map } from 'rxjs/operators';
 import { DATABASE_HOST, DATABASE_NAME, DATABASE_PASSWORD, DATABASE_PORT, DATABASE_TYPE, DATABASE_USERNAME, GROUP_MICROSERVICE_URI } from '../../../config';
 import { SNS_SQS } from "../aws/models/SNS_SQS";
+import { ConditionalOperation } from "../entities/conditionOperation";
 // const config = require("../../../config")
 const objectMapper = require('object-mapper');
 var pluralize = require('pluralize')
@@ -172,6 +173,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
       let result1: any;
       //entity
       let requestGuid = entity.RequestGuid;
+      let socketId = entity.SocketId;
      
       // let final_result: ResponseModel<TDto> = new ResponseModel(entity.RequestGuid,entity.SocketId, null, null, "123", "123", "gft", null);
       
@@ -193,6 +195,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
       // let successResponseModel = ResponseModel<TDto>
       let final_result:ResponseModel<TDto> = new ResponseModel(entity.RequestGuid,null,ServiceOperationResultType.success,"200",null,null,null,entity.SocketId,entity.CommunityUrl)
       final_result.setDataCollection(result);
+      final_result.setSocketId(entity.SocketId);
       return final_result;
       
       
@@ -263,6 +266,75 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
   //     })
   //   })
   //  }
+
+  public async search(requestModel: RequestModelQuery): Promise<ResponseModel<TDto>> {
+    console.log("Inside Search baby......requestModel is...."+JSON.stringify(requestModel));
+    let orderBy = 'ASC';
+    let orderByField = 'Id';
+    let isCaseInsensitiveSearch = false;
+    if (requestModel != null && requestModel.Filter != null) {
+      orderBy = !requestModel.Filter.IsOrderByFieldAsc ? 'DESC' : orderBy;
+      orderByField = requestModel.Filter.OrderByField != null ? requestModel.Filter.OrderByField : orderByField;
+
+    }
+    // console.log("Passed 1st Instance.....");
+    let queryField = this.genericRepository.createQueryBuilder().select("entity").from(this.entityClassType, "entity");
+    // console.log("queryField is......" + queryField.getSql());
+    if (requestModel.Children != null && requestModel.Children.length > 0) {
+      for (let i = 0; i < requestModel.Children.length; i++) {
+        queryField = queryField.innerJoinAndSelect("entity." + requestModel.Children[i], requestModel.Children[i]);
+      }
+    }
+    console.log("After passing children.....queryField is....." + queryField.getSql());
+    console.log("Length is...." + requestModel.Filter.Conditions.length + "\n\n\n\n\n\n\n");
+    let i = 0;
+    if (requestModel.Filter.Conditions != null && requestModel.Filter.Conditions.length > 0) {
+      i = requestModel.Filter.Conditions.length;
+      let str: string = "";
+      // str += "entity." + requestModel.Filter.Conditions[i].FieldName + "=:" + requestModel.Filter.Conditions[i].FieldName + JSON.stringify(requestModel.Filter.Conditions[i]);
+      let myJSON = {};
+      myJSON[requestModel.Filter.Conditions[0].FieldName] = requestModel.Filter.Conditions[0].FieldValue;
+      str += "entity." + requestModel.Filter.Conditions[0].FieldName + "=:" + requestModel.Filter.Conditions[0].FieldName + JSON.stringify({communityName:"abc"});
+
+      console.log("String is......." + str);
+      queryField = queryField.where("entity." + requestModel.Filter.Conditions[0].FieldName + "=:" + requestModel.Filter.Conditions[0].FieldName, myJSON);
+      for (i = 1; i < requestModel.Filter.Conditions.length; i++) {
+        console.log("hiiii.........");
+        console.log(requestModel.Filter.Conditions[i]);
+        console.log("hiii..........");
+        if (requestModel.Filter.Conditions[i].ConditionalSymbol === ConditionalOperation.And) {
+          let myJSON = {};
+          myJSON[requestModel.Filter.Conditions[i].FieldName] = requestModel.Filter.Conditions[i].FieldValue;
+          let str: string = "";
+          console.log("JSON is......" + JSON.stringify(myJSON));
+          str += "entity." + requestModel.Filter.Conditions[i].FieldName + "=:" + requestModel.Filter.Conditions[i].FieldName + JSON.stringify(requestModel.Filter.Conditions[i]);
+          console.log("string is......." + str);
+          queryField = queryField.andWhere("entity." + requestModel.Filter.Conditions[i].FieldName + "=:" + requestModel.Filter.Conditions[i].FieldName, myJSON);
+        }
+        else {
+          let myJSON = {};
+          myJSON[requestModel.Filter.Conditions[i].FieldName] = requestModel.Filter.Conditions[i].FieldValue;
+          let str: string = "";
+          str += "entity." + requestModel.Filter.Conditions[i].FieldName + "=:" + requestModel.Filter.Conditions[i].FieldName + JSON.stringify(requestModel.Filter.Conditions[i]);
+          console.log("JSON is......" + JSON.stringify(myJSON));
+          console.log("string is......." + str);
+          queryField = queryField.orWhere("entity." + requestModel.Filter.Conditions[i].FieldName + "=:" + requestModel.Filter.Conditions[i].FieldName, myJSON);
+        }
+      }
+      
+    }
+    let totalRecords = queryField.getCount();
+    console.log("totalRecords is....." + totalRecords);
+    if (requestModel.Filter.PageInfo != null) {
+      queryField= queryField.skip((requestModel.Filter.PageInfo.PageSize) *
+        (requestModel.Filter.PageInfo.PageNumber - 1))
+        .take(requestModel.Filter.PageInfo.PageSize);
+    }
+    console.log("Final Ultimate Query is.................." + queryField.getSql());
+    let result = queryField.getMany();
+    console.log("result is....." + result);
+    return null;
+  }
 
   public async findAll(type:ObjectType<TEntity>,type1: ClassType<TDto>, requestModel: RequestModelQuery):
     Promise<ResponseModel<TDto>> {

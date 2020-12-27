@@ -46,6 +46,7 @@ export class ResponseModel<TDto extends DtoBase> {
         this.CommunityUrl = communityUrl;
     }
 
+
     public getDataCollection(): TDto[]|null {
         return this.DataCollection;
     }
