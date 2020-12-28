@@ -18,6 +18,7 @@ import { map } from 'rxjs/operators';
 import { DATABASE_HOST, DATABASE_NAME, DATABASE_PASSWORD, DATABASE_PORT, DATABASE_TYPE, DATABASE_USERNAME, GROUP_MICROSERVICE_URI } from '../../../config';
 import { SNS_SQS } from "../aws/models/SNS_SQS";
 import { ConditionalOperation } from "../entities/conditionOperation";
+import { UserDto } from "submodules/platform-3.0-Dtos/userDto";
 // const config = require("../../../config")
 const objectMapper = require('object-mapper');
 var pluralize = require('pluralize')
@@ -224,6 +225,41 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
     }
     // return await this.genericRepository.remove(ids)
     throw new HttpException("No such id found ", HttpStatus.NOT_FOUND);
+  }
+
+  async updateEntity(dtos: RequestModel<TDto>): Promise<ResponseModel<TDto>>{
+    try {
+      await console.log("Inside update of generic repository...entity is...." + JSON.stringify(dtos));
+      var result: TDto[] = [];
+      var ids: number[] = [];
+      let result1: any;
+      var result2: any;
+      var entities: TEntity[] = [];
+      await Promise.all(dtos.DataCollection.map(async (dto_sample:any) => {
+        // console.log("Entity sample is......" + JSON.stringify(entity_sample));
+        console.log("Map is......" + JSON.stringify(this.entityMap));
+        // console.log("result....." + objectMapper(entity_sample, this.entityMap));
+        await entities.push(objectMapper(dto_sample, this.entityMap));
+        result1 = await this.genericRepository.update(dto_sample.Id, dto_sample);
+        // result2 = await this.genericRepository.merge()
+        // const entity = await this.genericRepository.findOne(dto_sample.Id);
+        // result1 = this.genericRepository.save(id:dto_sample.id, ...dto_sample);
+        await result.push(result1);
+        console.log("result is......." + JSON.stringify(result1));
+        await console.log("present result is......" + JSON.stringify(result));
+      })
+      );
+      let final_result:ResponseModel<TDto> = new ResponseModel(dtos.RequestGuid,null,ServiceOperationResultType.success,"200",null,null,null,dtos.SocketId,dtos.CommunityUrl)
+      final_result.setDataCollection(dtos.DataCollection);
+      return final_result;
+      
+    }
+    catch (err)
+    {
+      let final_result:ResponseModel<TDto> = new ResponseModel(dtos.RequestGuid,null,ServiceOperationResultType.failure,"500",null,null,[err],dtos.SocketId,dtos.CommunityUrl)
+      final_result.setDataCollection(dtos.DataCollection);
+      throw new HttpException(final_result, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   async deleteByIds(entity: RequestModel<TDto>): Promise<ResponseModel<TDto>> {
@@ -446,4 +482,17 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
   
     return responseModel;
   };
+
+
+
+
+  // public async getRequestModelByDto(requestModel: RequestModel<TDto>, userInfoDto: UserDto): Promise<RequestModel<TDto>> {
+
+  //   if (userInfoDto == null)
+  //     return requestModel;
+    
+
+  //   if(requestModel.)
+
+  // }
 }
