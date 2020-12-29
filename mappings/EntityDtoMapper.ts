@@ -1,6 +1,6 @@
 import { DeepPartial, EntitySchema, ObjectType } from "typeorm";
-import { DtoBase } from "../entities/DtoBase";
-import { EntityBase } from "../entities/EntityBase";
+import { DtoBase } from "../submodules/platform-3.0-Common/common/DtoBase";
+import { EntityBase } from "../submodules/platform-3.0-Common/common/EntityBase";
 
 var objectMapper = require('object-mapper');
 

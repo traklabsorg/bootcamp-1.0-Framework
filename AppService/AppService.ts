@@ -2,21 +2,21 @@ import { Injectable } from "@nestjs/common/decorators/core/injectable.decorator"
 import { HttpStatus } from "@nestjs/common/enums/http-status.enum";
 import { HttpException } from "@nestjs/common/exceptions/http.exception";
 import { ClassType } from "class-transformer/ClassTransformer";
-import { Page } from "../entities/page";
+import { Page } from "../submodules/platform-3.0-Common/common/page";
 // import { pluralize } from "sequelize/types/lib/utils";
-// import { RequestModelQuery } from "../entities/RequestModel";
-import { ResponseModel } from "../entities/ResponseModel";
-import { ServiceOperationResultType } from "../entities/ServiceOperationResultType";
+// import { RequestModelQuery } from "../submodules/platform-3.0-Common/common/RequestModel";
+import { ResponseModel } from "../submodules/platform-3.0-Common/common/ResponseModel";
+import { ServiceOperationResultType } from "../submodules/platform-3.0-Common/common/ServiceOperationResultType";
 import { createConnection, EntitySchema, getRepository, ObjectType, Repository, SelectQueryBuilder } from "typeorm";
-import { DtoBase } from "../entities/DtoBase";
-import { EntityBase } from "../entities/EntityBase";
-import { RequestModelQuery } from "../entities/RequestModelQuery";
-import { RequestModel } from "../entities/RequestModel";
+import { DtoBase } from "../submodules/platform-3.0-Common/common/DtoBase";
+import { EntityBase } from "../submodules/platform-3.0-Common/common/EntityBase";
+import { RequestModelQuery } from "../submodules/platform-3.0-Common/common/RequestModelQuery";
+import { RequestModel } from "../submodules/platform-3.0-Common/common/RequestModel";
 import { plainToClass } from "class-transformer";
 import { HttpService } from "@nestjs/common";
 import { map } from 'rxjs/operators';
 import { DATABASE_HOST, DATABASE_NAME, DATABASE_PASSWORD, DATABASE_PORT, DATABASE_TYPE, DATABASE_USERNAME, GROUP_MICROSERVICE_URI } from '../../../config';
-import { ConditionalOperation } from "../entities/conditionOperation";
+import { ConditionalOperation } from "../submodules/platform-3.0-Common/common/conditionOperation";
 // const config = require("../../../config")
 const objectMapper = require('object-mapper');
 var pluralize = require('pluralize')
