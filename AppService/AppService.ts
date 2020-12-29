@@ -7,7 +7,7 @@ import { Page } from "../entities/page";
 // import { RequestModelQuery } from "../entities/RequestModel";
 import { ResponseModel } from "../entities/ResponseModel";
 import { ServiceOperationResultType } from "../entities/ServiceOperationResultType";
-import { createConnection, EntitySchema, getRepository, ObjectType, Repository } from "typeorm";
+import { createConnection, EntitySchema, getRepository, ObjectType, Repository, SelectQueryBuilder } from "typeorm";
 import { DtoBase } from "../entities/DtoBase";
 import { EntityBase } from "../entities/EntityBase";
 import { RequestModelQuery } from "../entities/RequestModelQuery";
@@ -16,9 +16,7 @@ import { plainToClass } from "class-transformer";
 import { HttpService } from "@nestjs/common";
 import { map } from 'rxjs/operators';
 import { DATABASE_HOST, DATABASE_NAME, DATABASE_PASSWORD, DATABASE_PORT, DATABASE_TYPE, DATABASE_USERNAME, GROUP_MICROSERVICE_URI } from '../../../config';
-import { SNS_SQS } from "../aws/models/SNS_SQS";
 import { ConditionalOperation } from "../entities/conditionOperation";
-import { UserDto } from "submodules/platform-3.0-Dtos/userDto";
 // const config = require("../../../config")
 const objectMapper = require('object-mapper');
 var pluralize = require('pluralize')
@@ -492,7 +490,75 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
   //     return requestModel;
     
 
-  //   if(requestModel.)
+  //   if (typeof (requestModel) === 'GROUP') {
+  //     public requ
+      
+  //   }
 
-  // }
+  // };
+
+  public async getGroupRequestModel(): Promise<any> {
+    try {
+      let children = ["community"];
+      let queryField = this.genericRepository.createQueryBuilder().select("entity").from(this.entityClassType, "entity");
+      queryField = queryField.innerJoinAndSelect("entity.community", "community").select(["community.Id"]);
+      console.log("sql query for group is......" + queryField.getSql());
+    }
+    catch (err) {
+      console.log("Error is......" + err);
+    }
+
+    return null;
+  }
+
+  private async getRequestModel(children: string[]): Promise<any>{
+    try {
+      let queryField = this.genericRepository.createQueryBuilder().select("entity").from(this.entityClassType, "entity");
+      let length_of_array = children.length;
+      if (length_of_array != 0) {
+        children.unshift("entity");
+        for (let i = 0; i < children.length - 1; i++) {
+          queryField.innerJoinAndSelect(children[i] + "." + children[i + 1], children[i + 1])
+        }
+      }
+      queryField = queryField.select([children[length_of_array - 1] + ".Id"]);
+      console.log("sql query for GenericEntity is......" + queryField.getSql());
+      return queryField;
+      
+    }
+    catch (err) {
+      console.log("Error occurred in Generic GetRequestModel......" + err);
+      throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    
+  }
+
+  public async getChannelGroupRequestModel(): Promise<any>{
+    try {
+      let children = ["group", "community"];
+      let queryField = this.genericRepository.createQueryBuilder().select("entity").from(this.entityClassType, "entity");
+      queryField = queryField.innerJoinAndSelect("entity.group", "group")
+        .innerJoinAndSelect("group.community", "community").select(["community.Id"]);
+      console.log("sql query for channelGroup is......" + queryField.getSql());
+    }
+    catch (err) {
+      console.log("Error is......" + err);
+    }
+    return null;
+  }
+
+  public async getUserRequestModel(): Promise<any>{
+    try {
+      let children = ["community"];
+      let queryField = this.genericRepository.createQueryBuilder().select("entity").from(this.entityClassType, "entity");
+      queryField = queryField.innerJoinAndSelect("entity.community", "community").select(["community.Id"]);
+      console.log("sql query for user is......" + queryField.getSql());
+    }
+    catch (err) {
+      console.log("Error is......" + err);
+    }
+  }
+
+
+
 }

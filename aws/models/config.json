@@ -408,9 +408,7 @@
 	
 	
 	},
-	
-	//*********** THESE NEEDS TO BE DELETED BEFORE PUTTING IT IN CODE *******************//
-	//******************* COMMUNITY **************//
+
 	
 	{
 	  "TopicName": "COMMUNITY_ADD",
@@ -471,7 +469,6 @@
       "TopicArn": "arn:aws:sns:us-east-2:938510084600:COMMUNITY_DELETE"
 	},
 	
-	//************** USER RELATED ******************//
 {
 	  "TopicName": "USER_ADD",
       "Publishers": ["API_GATEWAY_SERVICE"],
@@ -531,8 +528,6 @@
       "TopicArn": "arn:aws:sns:us-east-2:938510084600:USER_DELETE"
 	},
 	
-	
-	//************** GROUPUSER RELATED ******************//
 {
 	  "TopicName": "GROUPUSER_ADD",
       "Publishers": ["API_GATEWAY_SERVICE"],
@@ -591,8 +586,6 @@
       ],
       "TopicArn": "arn:aws:sns:us-east-2:938510084600:GROUPUSER_DELETE"
 	},
-	
-	//************** CHANNELGROUP RELATED ******************//
 {
 	  "TopicName": "CHANNELGROUP_ADD",
       "Publishers": ["API_GATEWAY_SERVICE"],
@@ -652,7 +645,6 @@
       "TopicArn": "arn:aws:sns:us-east-2:938510084600:CHANNELGROUP_DELETE"
 	},
 	
-	//************** SECTION RELATED ******************//
 {
 	  "TopicName": "SECTION_ADD",
       "Publishers": ["API_GATEWAY_SERVICE"],
@@ -712,8 +704,6 @@
       "TopicArn": "arn:aws:sns:us-east-2:938510084600:SECTION_DELETE"
 	},
 	
-	
-	//************** LESSON RELATED ******************//
 {
 	  "TopicName": "LESSON_ADD",
       "Publishers": ["API_GATEWAY_SERVICE"],
@@ -772,8 +762,6 @@
       ],
       "TopicArn": "arn:aws:sns:us-east-2:938510084600:LESSON_DELETE"
 	},
-
-//************** LESSON DATA RELATED ******************//
 {
 	  "TopicName": "LESSONDATA_ADD",
       "Publishers": ["API_GATEWAY_SERVICE"],
@@ -832,8 +820,6 @@
       ],
       "TopicArn": "arn:aws:sns:us-east-2:938510084600:LESSONDATA_DELETE"
 	},
-	
-	//************** LIVE CONTENT RELATED ******************//
 {
 	  "TopicName": "LIVECONTENT_ADD",
       "Publishers": ["API_GATEWAY_SERVICE"],
@@ -893,8 +879,6 @@
       "TopicArn": "arn:aws:sns:us-east-2:938510084600:LIVECONTENT_DELETE"
 	},
 	
-	
-	//************** LIVE CONTENT USERS RELATED ******************//
 {
 	  "TopicName": "LIVECONTENTUSER_ADD",
       "Publishers": ["API_GATEWAY_SERVICE"],
@@ -955,7 +939,6 @@
 	},
 	
 	
-	//************** CHANNEL BILL PLAN RELATED ******************//
 {
 	  "TopicName": "CHANNELBILLPLAN_ADD",
       "Publishers": ["API_GATEWAY_SERVICE"],
@@ -1016,7 +999,6 @@
 	},
 	
 	
-	//************** PLAN RELATED ******************//
 {
 	  "TopicName": "PLAN_ADD",
       "Publishers": ["API_GATEWAY_SERVICE"],
@@ -1077,7 +1059,6 @@
 	},
 	
 	
-	//************** COUPON RELATED ******************//
 {
 	  "TopicName": "COUPON_ADD",
       "Publishers": ["API_GATEWAY_SERVICE"],
@@ -1137,8 +1118,6 @@
       "TopicArn": "arn:aws:sns:us-east-2:938510084600:COUPON_DELETE"
 	},
 	
-	
-	//************** Subscription Order RELATED ******************//
 {
 	  "TopicName": "SUBSCRIPTIONORDER_ADD",
       "Publishers": ["API_GATEWAY_SERVICE"],
@@ -1198,7 +1177,6 @@
       "TopicArn": "arn:aws:sns:us-east-2:938510084600:SUBSCRIPTIONORDER_DELETE"
 	},
 	
-	//************** Payment Coupons RELATED ******************//
 {
 	  "TopicName": "PAYMENTCOUPON_ADD",
       "Publishers": ["API_GATEWAY_SERVICE"],
@@ -1259,7 +1237,6 @@
 	},
 	
 	
-	//************** Payments RELATED ******************//
 {
 	  "TopicName": "PAYMENT_ADD",
       "Publishers": ["API_GATEWAY_SERVICE"],
@@ -1319,7 +1296,6 @@
       "TopicArn": "arn:aws:sns:us-east-2:938510084600:PAYMENT_DELETE"
 	},
 	
-//************** Lesson Data Reviews RELATED ******************//
 {
 	  "TopicName": "LESSONDATAREVIEW_ADD",
       "Publishers": ["API_GATEWAY_SERVICE"],
@@ -1379,7 +1355,6 @@
       "TopicArn": "arn:aws:sns:us-east-2:938510084600:LESSONDATAREVIEW_DELETE"
 	},
 
-//************** Meeting Provider  RELATED ******************//
 {
 	  "TopicName": "MEETINGPROVIDER_ADD",
       "Publishers": ["API_GATEWAY_SERVICE"],
