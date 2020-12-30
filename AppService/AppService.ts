@@ -328,7 +328,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
       // str += "entity." + requestModel.Filter.Conditions[i].FieldName + "=:" + requestModel.Filter.Conditions[i].FieldName + JSON.stringify(requestModel.Filter.Conditions[i]);
       let myJSON = {};
       myJSON[requestModel.Filter.Conditions[0].FieldName] = requestModel.Filter.Conditions[0].FieldValue;
-      str += "entity." + requestModel.Filter.Conditions[0].FieldName + "=:" + requestModel.Filter.Conditions[0].FieldName + JSON.stringify({communityName:"abc"});
+      str += "entity." + requestModel.Filter.Conditions[0].FieldName + "=:" + requestModel.Filter.Conditions[0].FieldName + JSON.stringify(myJSON);
 
       console.log("String is......." + str);
       queryField = queryField.where("entity." + requestModel.Filter.Conditions[0].FieldName + "=:" + requestModel.Filter.Conditions[0].FieldName, myJSON);
@@ -336,14 +336,14 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
         console.log("hiiii.........");
         console.log(requestModel.Filter.Conditions[i]);
         console.log("hiii..........");
-        if (requestModel.Filter.Conditions[i].ConditionalSymbol === ConditionalOperation.And) {
+        if (requestModel.Filter.Conditions[i].ConditionalSymbol === ConditionalOperation.Or) {
           let myJSON = {};
           myJSON[requestModel.Filter.Conditions[i].FieldName] = requestModel.Filter.Conditions[i].FieldValue;
           let str: string = "";
           console.log("JSON is......" + JSON.stringify(myJSON));
           str += "entity." + requestModel.Filter.Conditions[i].FieldName + "=:" + requestModel.Filter.Conditions[i].FieldName + JSON.stringify(requestModel.Filter.Conditions[i]);
           console.log("string is......." + str);
-          queryField = queryField.andWhere("entity." + requestModel.Filter.Conditions[i].FieldName + "=:" + requestModel.Filter.Conditions[i].FieldName, myJSON);
+          queryField = queryField.orWhere("entity." + requestModel.Filter.Conditions[i].FieldName + "=:" + requestModel.Filter.Conditions[i].FieldName, myJSON);
         }
         else {
           let myJSON = {};
@@ -352,21 +352,26 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
           str += "entity." + requestModel.Filter.Conditions[i].FieldName + "=:" + requestModel.Filter.Conditions[i].FieldName + JSON.stringify(requestModel.Filter.Conditions[i]);
           console.log("JSON is......" + JSON.stringify(myJSON));
           console.log("string is......." + str);
-          queryField = queryField.orWhere("entity." + requestModel.Filter.Conditions[i].FieldName + "=:" + requestModel.Filter.Conditions[i].FieldName, myJSON);
+          queryField = queryField.andWhere("entity." + requestModel.Filter.Conditions[i].FieldName + "=:" + requestModel.Filter.Conditions[i].FieldName, myJSON);
         }
       }
       
     }
     let totalRecords = queryField.getCount();
-    console.log("totalRecords is....." + totalRecords);
+    console.log("totalRecords is....." + JSON.stringify(totalRecords));
+    // if (requestModel.Filter.PageInfo != null) {
+    //   queryField= queryField.skip((requestModel.Filter.PageInfo.PageSize) *
+    //     (requestModel.Filter.PageInfo.PageNumber - 1))
+    //     .take(requestModel.Filter.PageInfo.PageSize);
+    // }
     if (requestModel.Filter.PageInfo != null) {
-      queryField= queryField.skip((requestModel.Filter.PageInfo.PageSize) *
-        (requestModel.Filter.PageInfo.PageNumber - 1))
-        .take(requestModel.Filter.PageInfo.PageSize);
+      queryField= queryField.
+        take(19);
     }
+    
     console.log("Final Ultimate Query is.................." + queryField.getSql());
     let result = queryField.getMany();
-    console.log("result is....." + result);
+    console.log("\n\n\n\n\nresult is....." + JSON.stringify(result));
     return null;
   }
 
