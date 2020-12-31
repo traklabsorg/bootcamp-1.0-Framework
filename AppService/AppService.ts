@@ -359,20 +359,25 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
     }
     let totalRecords = queryField.getCount();
     console.log("totalRecords is....." + JSON.stringify(totalRecords));
-    // if (requestModel.Filter.PageInfo != null) {
-    //   queryField= queryField.skip((requestModel.Filter.PageInfo.PageSize) *
-    //     (requestModel.Filter.PageInfo.PageNumber - 1))
-    //     .take(requestModel.Filter.PageInfo.PageSize);
-    // }
     if (requestModel.Filter.PageInfo != null) {
-      queryField= queryField.
-        take(19);
+      queryField= queryField.skip((requestModel.Filter.PageInfo.PageSize) *
+        (requestModel.Filter.PageInfo.PageNumber - 1))
+        .take(requestModel.Filter.PageInfo.PageSize);
     }
+    // if (requestModel.Filter.PageInfo != null) {
+    //   queryField= queryField.
+    //     take(19);
+    // }
     
     console.log("Final Ultimate Query is.................." + queryField.getSql());
-    let result = queryField.getMany();
-    console.log("\n\n\n\n\nresult is....." + JSON.stringify(result));
-    return null;
+    let result:any = await queryField.getMany();
+    let final_result: ResponseModel<TDto> = new ResponseModel(requestModel.RequestGuid, null, ServiceOperationResultType.success, "200", null, null, null, null, null)
+    console.log("Setting result......")
+    await final_result.setDataCollection(result);
+    console.log("Final_result is......" + JSON.stringify(final_result));
+      
+    console.log("\n\n\n\n\nresult1 is....." + JSON.stringify(result));
+    return final_result;
   }
 
   public async findAll(type:ObjectType<TEntity>,type1: ClassType<TDto>, requestModel: RequestModelQuery):
