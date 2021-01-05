@@ -1,27 +1,25 @@
 import { DeepPartial, EntitySchema, ObjectType } from "typeorm";
-import { DtoBase } from "../submodules/platform-3.0-Common/common/DtoBase";
-import { EntityBase } from "../submodules/platform-3.0-Common/common/EntityBase";
+import { DtoBase } from "./../../platform-3.0-Dtos/DtoBase";
+import { EntityBase } from "./../../platform-3.0-Entities/EntityBase";
 
-var objectMapper = require('object-mapper');
+var objectMapper = require("object-mapper");
 
-export class EntityDtoMapper<TEntity extends EntityBase,TDto extends DtoBase> {
-
+export class EntityDtoMapper<TEntity extends EntityBase, TDto extends DtoBase> {
   private entityType: ObjectType<TEntity>;
-  private dtoType : ObjectType<TDto>;
+  private dtoType: ObjectType<TDto>;
   private map = {};
 
-  constructor(entitytype: ObjectType<TEntity>,dtotype: ObjectType<TDto>) {
+  constructor(entitytype: ObjectType<TEntity>, dtotype: ObjectType<TDto>) {
     this.entityType = entitytype;
     this.dtoType = dtotype;
   }
 
-  MapDtoToEntity(tDto:TDto): DeepPartial<TEntity> {
-
+  MapDtoToEntity(tDto: TDto): DeepPartial<TEntity> {
     //Read the properties whcih are of same name , do mapping using Object.Keys and Object,Values using recursion
     //INSTRUCTION: Use Inversify to resolve the mapper component for given TEntity and TDto and then call the mapper method of that.
 
     let map = {
-      "ChannelName2": "ChannelName"
+      ChannelName2: "ChannelName",
     };
 
     console.log("above dest");
@@ -29,11 +27,9 @@ export class EntityDtoMapper<TEntity extends EntityBase,TDto extends DtoBase> {
     //TO RESOLVE
     let dest = objectMapper(this.dtoType, map);
 
-    console.log('destination');
+    console.log("destination");
     console.log(dest);
 
-    
-        
     return dest;
   }
 
@@ -41,39 +37,37 @@ export class EntityDtoMapper<TEntity extends EntityBase,TDto extends DtoBase> {
 
   //   // let channelDto = new ChannelDto();
   //   //Read the properties whcih are of same name , do mapping using Object.Keys and Object,Values using recursion
-        
+
   //   let map = {
   //     "ChannelName": "ChannelName2",
   //     "Content.ContentName": "Content"
   //   };
-        
+
   //   var dest = objectMapper(entity, map);
   //   console.log(dest);
-        
+
   //   return dest;
   // }
-  
+
   AddMap(map: Object) {
     this.map = map;
-    
   }
 
   MapEntityToDto(): ObjectType<TDto> {
-
     //Read the properties whcih are of same name , do mapping using Object.Keys and Object,Values using recursion
 
     let map = {
-      "ChannelName2": "ChannelName"
+      ChannelName2: "ChannelName",
     };
 
     console.log("above dest1");
 
-    let dest = objectMapper(this.entityType,  {
-      "ChannelName2": "ChannelName"
+    let dest = objectMapper(this.entityType, {
+      ChannelName2: "ChannelName",
     });
 
     console.log(dest + " dest");
-        
+
     return dest;
   }
 }
