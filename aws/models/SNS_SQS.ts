@@ -1,14 +1,13 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { request } from "express";
 import { Log } from "../log";
-const configData = require("./config");
+const configData = require("./config-dev");
 // import { SNS_SQS } from "../models/SNS_SQS";
 const fs = require("fs");
 var AWS = require("aws-sdk");
 const path = require("path");
 var jwt = require("jsonwebtoken");
 var os = require("os");
-
 
 AWS.config.update({
   accessKeyId: process.env.AWS_ACCESS_KEY,
@@ -66,7 +65,6 @@ export class SNS_SQS {
   }
 
   public async init_AWS_SNS_SQS() {
-    
     let topics = configData.Topics;
     for (let i = 0; i < topics.length; i++) {
       let topic = topics[i];
@@ -180,24 +178,24 @@ export class SNS_SQS {
   }
 
   public async publishMessageToTopic(topicName, message) {
-    console.log("TopicName is...." + topicName + "....Meessage is...." + message);
+    console.log(
+      "TopicName is...." + topicName + "....Meessage is...." + message
+    );
     var topicArn = this.topicARNMap[topicName];
     console.log("TopicArn is......." + topicArn);
-    console.log(topicArn)
+    console.log(topicArn);
     var publishParams = {
       TopicArn: topicArn,
       Message: JSON.stringify(message),
     };
-    
+
     sns.publish(publishParams, function (err, data) {
       if (err) {
-        console.log("Inside Errors.....err is...."+err);
-        
-        
+        console.log("Inside Errors.....err is...." + err);
+
         this.processErrors(message, err);
         console.log("Error is....." + err + "     data is...");
-      }
-      else{
+      } else {
         console.log("data is....." + JSON.stringify(data));
       }
     });
@@ -253,13 +251,11 @@ export class SNS_SQS {
   }
 
   public async LogInfo(message: string) {
-
     let log = new Log();
     log.setUserMessage(message);
     log.setIssueTypeId(Issue_Type_ID.Information);
     log.setIssueCategoryId(Issue_Category.Low);
-    return this.processLogs(log,null,null);
-
+    return this.processLogs(log, null, null);
 
     //here the log category is information
     //log type is low
@@ -272,7 +268,7 @@ export class SNS_SQS {
     log.setIssueTypeId(Issue_Type_ID.Warning);
     log.setIssueCategoryId(Issue_Category.Low);
 
-    return this.processLogs(log,null,null);
+    return this.processLogs(log, null, null);
 
     //here the log category is warning
     ///call the processLogs with the prepared object
@@ -283,7 +279,7 @@ export class SNS_SQS {
     log.setUserMessage(message);
     log.setIssueTypeId(Issue_Type_ID.Exception);
     log.setIssueCategoryId(Issue_Category.Critical);
-    return this.processLogs(log,"socketId1","requestGuid1");
+    return this.processLogs(log, "socketId1", "requestGuid1");
 
     //here the log category is Exeception
     //log type is critical
@@ -383,7 +379,7 @@ export class SNS_SQS {
   }
 
   //todo: make it private
-  public  processErrors(message, error) {
+  public processErrors(message, error) {
     let requestGUID_temp = message["RequestGUID"] ? message["RequestGUID"] : "";
     let socketId_temp = message["socketId"] ? message["socketId"] : "";
     this.processLogs(error, socketId_temp, requestGUID_temp);
