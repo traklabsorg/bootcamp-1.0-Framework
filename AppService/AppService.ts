@@ -568,8 +568,9 @@ export default class AppService<
       "Final Ultimate Query is.................." + queryField.getSql()
     );
     let result: any = await queryField.getMany();
+    let uuid: string = "new uuid()";
     let final_result: ResponseModel<TDto> = new ResponseModel(
-      requestModel.RequestGuid,
+      uuid,
       null,
       ServiceOperationResultType.success,
       "200",
