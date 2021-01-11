@@ -1,6 +1,3 @@
 [submodule "submodules/platform-3.0-Common"]
 	path = submodules/platform-3.0-Common
 	url = https://github.com/smartupio/platform-3.0-Common
-[submodule "submodules/platform-3.0-AWS"]
-	path = submodules/platform-3.0-AWS
-	url = https://github.com/smartupio/platform-3.0-AWS.git
