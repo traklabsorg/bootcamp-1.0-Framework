@@ -9,7 +9,7 @@ import { ResponseModel } from "../submodules/platform-3.0-Common/common/Response
 import { ServiceOperationResultType } from "../submodules/platform-3.0-Common/common/ServiceOperationResultType";
 import { createConnection, EntitySchema, getRepository, ObjectType, Repository, SelectQueryBuilder } from "typeorm";
 import { DtoBase } from "../submodules/platform-3.0-Common/common/DtoBase";
-import { EntityBase } from "../submodules/platform-3.0-Common/common/EntityBase";
+
 import { RequestModelQuery } from "../submodules/platform-3.0-Common/common/RequestModelQuery";
 import { RequestModel } from "../submodules/platform-3.0-Common/common/RequestModel";
 import { plainToClass } from "class-transformer";
@@ -17,6 +17,7 @@ import { HttpService } from "@nestjs/common";
 import { map } from 'rxjs/operators';
 import { DATABASE_HOST, DATABASE_NAME, DATABASE_PASSWORD, DATABASE_PORT, DATABASE_TYPE, DATABASE_USERNAME, GROUP_MICROSERVICE_URI } from '../../../config';
 import { ConditionalOperation } from "../submodules/platform-3.0-Common/common/conditionOperation";
+import { EntityBase } from "../EntityBase/EntityBase";
 // const config = require("../../../config")
 const objectMapper = require('object-mapper');
 var pluralize = require('pluralize')
@@ -414,7 +415,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
     
       console.log("Final Ultimate Query is.................." + queryField.getSql());
       let result: any = await queryField.getMany();
-      let final_result: ResponseModel<TDto> = new ResponseModel(requestModel.RequestGuid, null, ServiceOperationResultType.success, "200", null, null, null, null, null)
+      let final_result: ResponseModel<TDto> = new ResponseModel(requestModel.getRequestGuid(), null, ServiceOperationResultType.success, "200", null, null, null, null, null)
       console.log("Setting result......")
       await final_result.setDataCollection(result);
       console.log("Final_result is......" + JSON.stringify(final_result));
@@ -424,7 +425,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
     }
     catch (err) {
       console.log("Error is......." + JSON.stringify(err));
-      let final_result: ResponseModel<TDto> = new ResponseModel(requestModel.RequestGuid, null, ServiceOperationResultType.error, "500", null, null, null, null, err)
+      let final_result: ResponseModel<TDto> = new ResponseModel(requestModel.getRequestGuid(), null, ServiceOperationResultType.error, "500", null, null, null, null, err)
 
       throw final_result;
     };
