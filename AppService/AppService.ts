@@ -15,7 +15,7 @@ import { RequestModel } from "../submodules/platform-3.0-Common/common/RequestMo
 import { plainToClass } from "class-transformer";
 import { HttpService } from "@nestjs/common";
 import { map } from 'rxjs/operators';
-import { DATABASE_HOST, DATABASE_NAME, DATABASE_PASSWORD, DATABASE_PORT, DATABASE_TYPE, DATABASE_USERNAME, GROUP_MICROSERVICE_URI } from '../../../config';
+// import { DATABASE_HOST, DATABASE_NAME, DATABASE_PASSWORD, DATABASE_PORT, DATABASE_TYPE, DATABASE_USERNAME, GROUP_MICROSERVICE_URI } from '../../../config';
 import { ConditionalOperation } from "../submodules/platform-3.0-Common/common/conditionOperation";
 import { EntityBase } from "../EntityBase/EntityBase";
 // const config = require("../../../config")
@@ -63,29 +63,29 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
 
 
 
-  getTenantId(communityUrl: string): any{
+//   getTenantId(communityUrl: string): any{
     
-    const headersRequest = {
-      'Content-Type': 'application/json',
-      'Authorization': `Basic `+communityUrl,
-  };
-    console.log("Inside Tenant Id......uri is....." + GROUP_MICROSERVICE_URI + "/tenant/" + communityUrl);
-    if (!cache.get(communityUrl))
-    {
-      return this.http.get(GROUP_MICROSERVICE_URI + "/tenant"+ "/" + communityUrl,{ headers: headersRequest })
-      .pipe(
-        map(response => {
-          cache.set(communityUrl, response.data );
-          response.data
-        })
-      );
-    }
-    else{
-      console.log("dict is......" + this.dict);
-      return cache.get(communityUrl);
-    }
+//     const headersRequest = {
+//       'Content-Type': 'application/json',
+//       'Authorization': `Basic `+communityUrl,
+//   };
+//     console.log("Inside Tenant Id......uri is....." + GROUP_MICROSERVICE_URI + "/tenant/" + communityUrl);
+//     if (!cache.get(communityUrl))
+//     {
+//       return this.http.get(GROUP_MICROSERVICE_URI + "/tenant"+ "/" + communityUrl,{ headers: headersRequest })
+//       .pipe(
+//         map(response => {
+//           cache.set(communityUrl, response.data );
+//           response.data
+//         })
+//       );
+//     }
+//     else{
+//       console.log("dict is......" + this.dict);
+//       return cache.get(communityUrl);
+//     }
    
-}
+// }
   
   
   addDtoMap(map: Record<string, unknown>) {
