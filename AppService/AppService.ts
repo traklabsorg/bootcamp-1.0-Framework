@@ -550,34 +550,34 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
 
 
 
-  public async getChannelGroupRequestModel(): Promise<any>{
-    try {
-      let children = ["group", "community"];
-      let queryField = this.genericRepository.createQueryBuilder("groupUser")
-      queryField = queryField.leftJoinAndSelect("groupUser.group", "group")
-        .leftJoinAndSelect("group.community", "community").select(["community.Id"]);
-      console.log("sql query for channelGroup is......" + queryField.getSql());
-      let result:any = await queryField.where("groupUser.Id=:Id", { Id: 1 }).distinct().getOneOrFail();
-      console.log("Result is....."+JSON.stringify(result))
-      return result;
-    }
-    catch (err) {
-      console.log("Error is......" + err);
-    }
-    return null;
-  }
+  // public async getChannelGroupRequestModel(): Promise<any>{
+  //   try {
+  //     let children = ["group", "community"];
+  //     let queryField = this.genericRepository.createQueryBuilder("groupUser")
+  //     queryField = queryField.leftJoinAndSelect("groupUser.group", "group")
+  //       .leftJoinAndSelect("group.community", "community").select(["community.Id"]);
+  //     console.log("sql query for channelGroup is......" + queryField.getSql());
+  //     let result:any = await queryField.where("groupUser.Id=:Id", { Id: 1 }).distinct().getOneOrFail();
+  //     console.log("Result is....."+JSON.stringify(result))
+  //     return result;
+  //   }
+  //   catch (err) {
+  //     console.log("Error is......" + err);
+  //   }
+  //   return null;
+  // }
 
-  public async getUserRequestModel(): Promise<any>{
-    try {
-      let children = ["community"];
-      let queryField = this.genericRepository.createQueryBuilder().select("entity").from(this.entityClassType, "entity");
-      queryField = queryField.innerJoinAndSelect("entity.community", "community").select(["community.Id"]);
-      console.log("sql query for user is......" + queryField.getSql());
-    }
-    catch (err) {
-      console.log("Error is......" + err);
-    }
-  }
+  // public async getUserRequestModel(): Promise<any>{
+  //   try {
+  //     let children = ["community"];
+  //     let queryField = this.genericRepository.createQueryBuilder().select("entity").from(this.entityClassType, "entity");
+  //     queryField = queryField.innerJoinAndSelect("entity.community", "community").select(["community.Id"]);
+  //     console.log("sql query for user is......" + queryField.getSql());
+  //   }
+  //   catch (err) {
+  //     console.log("Error is......" + err);
+  //   }
+  // }
 
 
 
