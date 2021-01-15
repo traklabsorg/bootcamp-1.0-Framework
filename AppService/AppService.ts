@@ -415,7 +415,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
     
       console.log("Final Ultimate Query is.................." + queryField.getSql());
       let result: any = await queryField.getMany();
-      let final_result: ResponseModel<TDto> = new ResponseModel(requestModel.getRequestGuid(), null, ServiceOperationResultType.success, "200", null, null, null, null, null)
+      let final_result: ResponseModel<TDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null)
       console.log("Setting result......")
       await final_result.setDataCollection(result);
       console.log("Final_result is......" + JSON.stringify(final_result));
@@ -425,7 +425,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
     }
     catch (err) {
       console.log("Error is......." + JSON.stringify(err));
-      let final_result: ResponseModel<TDto> = new ResponseModel(requestModel.getRequestGuid(), null, ServiceOperationResultType.error, "500", null, null, null, null, err)
+      let final_result: ResponseModel<TDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.error, "500", null, null, null, null, err)
 
       throw final_result;
     };
