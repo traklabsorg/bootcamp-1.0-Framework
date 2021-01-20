@@ -18,6 +18,7 @@ import { map } from 'rxjs/operators';
 // import { DATABASE_HOST, DATABASE_NAME, DATABASE_PASSWORD, DATABASE_PORT, DATABASE_TYPE, DATABASE_USERNAME, GROUP_MICROSERVICE_URI } from '../../../config';
 import { ConditionalOperation } from "../submodules/platform-3.0-Common/common/conditionOperation";
 import { EntityBase } from "../EntityBase/EntityBase";
+import { Condition } from "../submodules/platform-3.0-Common/common/condition";
 // const config = require("../../../config")
 const objectMapper = require('object-mapper');
 var pluralize = require('pluralize')
@@ -318,9 +319,10 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
   //   })
   //  }
 
-  public async search(requestModel: RequestModelQuery): Promise<ResponseModel<TDto>> {
-    try {
-      console.log("Inside Search baby......requestModel is...." + JSON.stringify(requestModel));
+
+  private async createQueryByRequestModelQuery(requestModel: RequestModelQuery): Promise<SelectQueryBuilder<TEntity>>{
+    try { 
+      // console.log("Inside Search baby......requestModel is...." + JSON.stringify(requestModel));
       let orderBy = 'ASC';
       let orderByField = 'Id';
       let isCaseInsensitiveSearch = false;
@@ -333,6 +335,10 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
       console.log("requestmodel.children is....." + requestModel.Children)
 
       let queryField = this.genericRepository.createQueryBuilder(requestModel.Children[0])
+      // if (select != null) {
+      //   console.log("\n\n\n\nelect != null.....................\n\n\n\n\n")
+      //   queryField.addSelect("COUNT('groupUser.groupId')",'count_temp')
+      // }
       // let result123 = await this.genericRepository.query('SELECT COUNT(DISTINCT("groupUser"."id")) AS "cnt" FROM "groupUsers" "groupUser" INNER JOIN "users" "user" ON "user"."id"="groupUser"."user_id"  INNER JOIN "groups" "group" ON "group"."id"="groupUser"."group_id" WHERE "groupUser"."group_image"=\'groupImage2\'');
 
       if (requestModel.Children != null && requestModel.Children.length > 0) {
@@ -346,24 +352,34 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
       let i = 0;
       if (requestModel.Filter.Conditions != null && requestModel.Filter.Conditions.length > 0) {
         i = requestModel.Filter.Conditions.length;
-        let str: string = "";
-        // str += "entity." + requestModel.Filter.Conditions[i].FieldName + "=:" + requestModel.Filter.Conditions[i].FieldName + JSON.stringify(requestModel.Filter.Conditions[i]);
-        // if (typeof (requestModel.Filter.Conditions[0].FieldValue) == typeof ('')) {
-        //   console.log(requestModel.Filter.Conditions[0].FieldValue + ".........................is a string");
-        //   requestModel.Filter.Conditions[0].FieldValue.replace(/'/g, '"');
-        //   console.log(requestModel.Filter.Conditions[0].FieldValue)
-        // }
+
         let myJSON = {}
         // myJSON[requestModel.Filter.Conditions[0].FieldName] = requestModel.Filter.Conditions[0].FieldValue;
-        myJSON['fieldName'+0] = requestModel.Filter.Conditions[0].FieldValue;
+        
+        let fieldValue = requestModel.Filter.Conditions[0].FieldValue;
         console.log("Myjson init is......" + JSON.stringify(myJSON));
         if (requestModel.Filter.Conditions[0].FieldName.indexOf('.') > -1) {
-          console.log("1st taking 1 ....." + requestModel.Filter.Conditions[0].FieldName + "=:fieldName"+0, myJSON);
-          queryField = queryField.andWhere(requestModel.Filter.Conditions[0].FieldName + "=:fieldName"+0, myJSON);
+          if (typeof (fieldValue) == typeof ('')) {
+            myJSON['fieldName' + 0] = `%${requestModel.Filter.Conditions[0].FieldValue}%`;
+            queryField = queryField.andWhere(requestModel.Filter.Conditions[0].FieldName + " LIKE :fieldName"+0, myJSON);
+          }
+          else {
+            myJSON['fieldName' + 0] = requestModel.Filter.Conditions[0].FieldValue;
+            queryField = queryField.andWhere(requestModel.Filter.Conditions[0].FieldName + "=:fieldName"+0, myJSON);
+          }
+
         }
         else {
-          console.log("Myjson init 2 ......." + requestModel.Children[0] + "." + requestModel.Filter.Conditions[0].FieldName + "=:fieldName"+0, myJSON);
-          queryField = queryField.andWhere(requestModel.Children[0] + "." + requestModel.Filter.Conditions[0].FieldName + "=:fieldName"+0, myJSON);
+          if (typeof (fieldValue) == typeof ('')) {
+            myJSON['fieldName' + 0] = `%${requestModel.Filter.Conditions[0].FieldValue}%`;
+            queryField = queryField.andWhere(requestModel.Children[0] + "." + requestModel.Filter.Conditions[0].FieldName + " LIKE :fieldName"+0, myJSON);
+          }
+          else {
+            myJSON['fieldName' + 0] = requestModel.Filter.Conditions[0].FieldValue;
+            queryField = queryField.andWhere(requestModel.Children[0] + "." + requestModel.Filter.Conditions[0].FieldName + "=:fieldName"+0, myJSON);
+          }
+          // console.log("Myjson init 2 ......." + requestModel.Children[0] + "." + requestModel.Filter.Conditions[0].FieldName + "=:fieldName"+0, myJSON);
+          // queryField = queryField.andWhere(requestModel.Children[0] + "." + requestModel.Filter.Conditions[0].FieldName + "=:fieldName"+0, myJSON);
         }
         console.log("\n\n\n\n\nBefore entering second condition.....query generated is........" + queryField.getQuery() + "\n\n\n\n\n\n\n\n\n\n");
         let str1 = '';
@@ -378,31 +394,63 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
           console.log("All conditions are..........." + JSON.stringify(requestModel.Filter.Conditions));
           console.log("\n\nrequestModel.Filter.Conditions[i-1].ConditionalSymbol is...." + requestModel.Filter.Conditions[i - 1].ConditionalSymbol);
           console.log("type is......" + typeof (requestModel.Filter.Conditions[i - 1].ConditionalSymbol));
-          console.log("ConditionalOperation.Or is........." + ConditionalOperation.Or);
-          console.log(" type of ConditionalOperation.Or...................." + ConditionalOperation.Or + "\n\n\n\n\n");
-        
+          let fieldValue: any = requestModel.Filter.Conditions[i].FieldValue;
           if (requestModel.Filter.Conditions[i-1].ConditionalSymbol == ConditionalOperation.Or) {
             let myJSON = {};
+            if (typeof (fieldValue) == typeof ('')) {
+              myJSON['fieldName' + i] = `%${requestModel.Filter.Conditions[i].FieldValue}%`;
+              queryField = queryField.orWhere(str1 + " LIKE :fieldName"+i, myJSON);
+            }
+            else {
+              myJSON['fieldName' + i] = requestModel.Filter.Conditions[i].FieldValue;
+              queryField = queryField.orWhere(str1 + "=:fieldName"+i, myJSON);
+            }
             // `%${ requestModel.Filter.Conditions[i].FieldValue }%`
-            myJSON['fieldName'+i] = `%${ requestModel.Filter.Conditions[i].FieldValue }%`;
-            console.log("\n\n\n\nMyjson1 is......" + myJSON);
-            let str: string = "";
-            // queryField = queryField.orWhere(str1 + "=:fieldName" + i, myJSON);
-            queryField = queryField.orWhere(str1 + " LIKE :fieldName"+i, myJSON);
+            // myJSON['fieldName'+i] = `%${ requestModel.Filter.Conditions[i].FieldValue }%`;
+            // console.log("\n\n\n\nMyjson1 is......" + myJSON);
+            // // queryField = queryField.orWhere(str1 + "=:fieldName" + i, myJSON);
+            // queryField = queryField.orWhere(str1 + " LIKE :fieldName"+i, myJSON);
           }
           else {
             let myJSON = {};
-            myJSON['fieldName'+i] = `%${ requestModel.Filter.Conditions[i].FieldValue }%`;
-            let str: string = "";
-            console.log("\n\n\n\nMyjson2 is......" + JSON.stringify(myJSON));
-            // queryField = queryField.andWhere(str1+ "=:fieldName"+i , myJSON);
-            queryField = queryField.andWhere(str1+ " LIKE :fieldName"+i , myJSON);
+            if (typeof (fieldValue) == typeof ('')) {
+              myJSON['fieldName' + i] = `%${requestModel.Filter.Conditions[i].FieldValue}%`;
+              queryField = queryField.andWhere(str1 + " LIKE :fieldName"+i, myJSON);
+            }
+            else {
+              myJSON['fieldName' + i] = requestModel.Filter.Conditions[i].FieldValue;
+              queryField = queryField.andWhere(str1 + "=:fieldName"+i, myJSON);
+            }
+            // myJSON['fieldName'+i] = `%${ requestModel.Filter.Conditions[i].FieldValue }%`;
+            // console.log("\n\n\n\nMyjson2 is......" + JSON.stringify(myJSON));
+            // // queryField = queryField.andWhere(str1+ "=:fieldName"+i , myJSON);
+            // queryField = queryField.andWhere(str1+ " LIKE :fieldName"+i , myJSON);
           }
         }
-      
       }
-      let totalRecords = queryField.getCount();
-      console.log("totalRecords is....." + JSON.stringify(totalRecords));
+      // if (select != null) {
+        // return queryField.select(['groupUser.Id', "COUNT('groupUser.Id')"])
+        // return queryField.select([ "COUNT('groupUser.Id')"])
+        // queryField = queryField.select('groupUser.groupId',"groupId");
+        // queryField = queryField.addSelect("COUNT(groupUser.Id)", 'count')
+        // queryField = queryField.select("COUNT(groupUser.Id)", 'count')
+        // queryField = queryField.addSelect('user.userEmail','userEmail')
+        // return queryField.select(['groupUser.groupId', "COUNT(\"groupUser\".\"id\")"])
+      // }
+      return queryField;
+    }
+    catch (err) {
+      throw err;
+    }
+    
+  }
+
+  public async search(requestModel: RequestModelQuery): Promise<ResponseModel<TDto>> {
+    try {
+      let queryField: any = await this.createQueryByRequestModelQuery(requestModel);
+      
+      // let totalRecords = await queryField.getCount();
+      // console.log("totalRecords is....." + JSON.stringify(totalRecords));
       if (requestModel.Filter.PageInfo != null) {
         queryField = queryField.skip((requestModel.Filter.PageInfo.PageSize) *
           (requestModel.Filter.PageInfo.PageNumber - 1))
@@ -431,7 +479,44 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
     };
     
   }
+
+  public async getCountByConditions(requestModel: RequestModelQuery): Promise<any>{
+    try {
+      let result = [];
+      console.log("\n\n\n\n Inside getCountByConditions.....requestModel is......." + JSON.stringify(requestModel));
+      let myJSON = {};
+      let groupByField: string = requestModel.Filter.OrderByField;
+      let baseEntity: string = requestModel.Children[0];
+      let result1: any = await (await this.createQueryByRequestModelQuery(requestModel)).select("COUNT("+baseEntity+".Id)", 'count_temp').addSelect(groupByField).groupBy(groupByField).execute();
+      // let result2: any = await this.genericRepository.query('SELECT "groupUser"."group_id" AS "groupUser_group_id", "groupUser"."id" AS "groupUser_id", COUNT("groupUser"."id") AS "count" FROM "groupUsers" "groupUser" INNER JOIN "users" "user" ON "user"."id"="groupUser"."user_id"  INNER JOIN "groups" "group" ON "group"."id"="groupUser"."group_id" WHERE "user"."user_email" LIKE \'%subahshlavi04@gmail.com%\' OR "user"."user_email" LIKE \'%subahshlavi03@gmail.com%\' GROUP BY "groupUser"."id"');
+
+      console.log("\n\n\n\n\nResult1 is................" + JSON.stringify(result1));
+      // console.log("\n\n\n\n\nResult2 is................" + JSON.stringify(result2));
+      // await Promise.all(requestModel.Filter.Conditions.map(async (condition: Condition, i) => {
+      //   console.log("\n\n\n\nInitilizing " + i + "   th cond............\n\n\n");
+      //   let myJSON = {}
+      //   let reqModel: RequestModelQuery = requestModel;
+      //   reqModel.Filter.Conditions = [requestModel.Filter.Conditions[i]];
+      //   myJSON[reqModel.Filter.Conditions[i].FieldName] = requestModel.Filter.Conditions[i].FieldValue;
+      //   console.log("\n\n\n\njson hghgh is.........."+JSON.stringify(myJSON)+"\n\n\n\n")
+      //   myJSON["count"] = await (await this.createQueryByRequestModelQuery(reqModel)).getCount();
+      //   console.log("MyJSON is.................." + JSON.stringify(myJSON));
+      //   result.push(myJSON);
+      //   console.log("Result is......." + JSON.stringify(result))
+        
+      // }))
+      return result1;
+    }
+    catch (err) {
+      throw err;
+    }
+  }
   
+
+  public async getAllRecordsCount(requestModel: RequestModelQuery): Promise<number>{
+    let result: number = await (await this.createQueryByRequestModelQuery(requestModel)).getCount();
+    return result;
+  }
 
   
 
