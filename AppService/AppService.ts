@@ -216,7 +216,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
       
     }
     catch (error){
-      console.log("Error occured while inserting groups....." + error);
+      console.log("Error occured while inserting entity....." + error);
       let final_result:ResponseModel<TDto> = new ResponseModel(entity.RequestGuid,null,ServiceOperationResultType.error,"500",null,null,null,entity.SocketId,entity.CommunityUrl)
 
       throw new HttpException(final_result, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -300,7 +300,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
       
     }
     catch (error){
-      console.log("Error occured while inserting groups....." + error);
+      console.log("Error occured while deleting entity....." + error);
       let final_result:ResponseModel<TDto> = new ResponseModel(entity.RequestGuid,null,ServiceOperationResultType.error,"500",null,null,null,entity.SocketId,entity.CommunityUrl)
 
       throw new HttpException(final_result, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -322,7 +322,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
 
   private async createQueryByRequestModelQuery(requestModel: RequestModelQuery): Promise<SelectQueryBuilder<TEntity>>{
     try { 
-      // console.log("Inside Search baby......requestModel is...." + JSON.stringify(requestModel));
+      console.log("Inside createQueryByRequestModelQuery baby......requestModel is...." + JSON.stringify(requestModel));
       let orderBy = 'ASC';
       let orderByField = 'Id';
       let isCaseInsensitiveSearch = false;
@@ -334,7 +334,13 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
 
       console.log("requestmodel.children is....." + requestModel.Children)
 
+      // let queryField1 = this.genericRepository.createQueryBuilder(requestModel.Children[0]).getOneOrFail();
+
+      console.log("here......12345");
+
       let queryField = this.genericRepository.createQueryBuilder(requestModel.Children[0])
+      
+      console.log("QueryField is,........"+JSON.stringify(queryField))
       // if (select != null) {
       //   console.log("\n\n\n\nelect != null.....................\n\n\n\n\n")
       //   queryField.addSelect("COUNT('groupUser.groupId')",'count_temp')
@@ -440,6 +446,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
       return queryField;
     }
     catch (err) {
+      console.log("Error thrown from createQueryByRequestModelQuery....... Error is....."+JSON.stringify(err));
       throw err;
     }
     
