@@ -272,6 +272,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
     {
       let final_result:ResponseModel<TDto> = new ResponseModel(dtos.RequestGuid,null,ServiceOperationResultType.failure,"500",null,null,[err],dtos.SocketId,dtos.CommunityUrl)
       final_result.setDataCollection(dtos.DataCollection);
+      final_result.setMessage("500",err.detail)
       throw new HttpException(final_result, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
@@ -334,13 +335,14 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
 
       console.log("requestmodel.children is....." + requestModel.Children)
 
-      // let queryField1 = this.genericRepository.createQueryBuilder(requestModel.Children[0]).getOneOrFail();
 
       console.log("here......12345");
-
-      let queryField = this.genericRepository.createQueryBuilder(requestModel.Children[0])
       
-      console.log("QueryField is,........"+JSON.stringify(queryField))
+      let queryField = this.genericRepository.createQueryBuilder(requestModel.Children[0]);
+      // let x = queryField.getMany();
+      // console.log("x is...."+JSON.stringify(x));
+      
+      // console.log("QueryField is,........"+JSON.stringify(queryField))
       // if (select != null) {
       //   console.log("\n\n\n\nelect != null.....................\n\n\n\n\n")
       //   queryField.addSelect("COUNT('groupUser.groupId')",'count_temp')
@@ -578,7 +580,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
       console.log("Children is....." + children);
       // let queryField = this.genericRepository.createQueryBuilder().select("entity").from(this.entityClassType, "entity");
       let queryField = this.genericRepository.createQueryBuilder(children[0]);
-      //let result3 = queryField.getMany();
+      let result3 = queryField.getMany();
      // console.log("Result is....." + JSON.stringify(result3));
       let length_of_array = children.length;
       if (length_of_array != 0) {
@@ -625,6 +627,74 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
 //      throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
       throw new Error(err);
     }
+  }
+
+
+
+
+
+  public async getChildrenIds(children: string[],id:number, child ?:string): Promise<ResponseModel<any>>{
+    try {
+
+      console.log("Children is....." + children);
+      console.log("Child is...."+child);
+      // let queryField = this.genericRepository.createQueryBuilder().select("entity").from(this.entityClassType, "entity");
+      let queryField = this.genericRepository.createQueryBuilder(children[0]);
+      // if(child!=null || child.length != 0)
+      
+      let result3 = queryField.getMany();
+     // console.log("Result is....." + JSON.stringify(result3));
+      let length_of_array = children.length;
+      if (length_of_array != 0) {
+        // children.unshift("groupUser");
+        // console.log("After unshift....children is....." + children);
+        for (let i = 0; i <length_of_array - 1 ; i++) {
+          console.log("\n\n\n\n",children[i],children[i+1],"\n\n\n\n")
+          queryField.leftJoinAndSelect(children[i] + "." + children[i+1], children[i+1])
+          // console.log("query inside loop...."+queryField.getSql())
+        }
+      };
+      
+      
+
+     // let result1: any = await queryField.getMany();
+     // console.log("result1 is............" + JSON.stringify(result1));
+      // queryField = queryField.select([children[length_of_array] + ".Id"]);
+      // console.log("sql query for GenericEntity is......" + queryField.getSql());
+      let myJSON = {};
+      myJSON['Id'] = id;
+
+      //queryField = queryField.where("group_user.id=1");
+      // queryField.where(children[0] + ".id=:Id", myJSON);
+      queryField.where(children[length_of_array-1]+".id=:Id",myJSON);
+      // queryField.addSelect("user.community_id");
+      queryField.addSelect(children[0] + ".id");
+      // console.log("sql query for GenericEntity  2 is......" + queryField.getSql());
+      // let result:any = await queryField.select(["user.community_id"]).where("groupUser.id=:Id", myJSON).distinct().getMany();
+      //let result: any = await queryField.select["user.community_id"].where("group_user.id=:Id", myJSON).distinct().getMany();
+      let result: any = await queryField.getMany(); //  await queryField.select["\"user\".community_id"];
+      // console.log("\n\n\n\nbabayyyy......." + result["communityId"])
+      // console.log(typeof (result));
+      // console.log("Result is....12345.........." + JSON.stringify(result[0].user.community.Id));
+      // let result2: any = await queryField.where("groupUser.Id=:Id", myJSON).getMany();
+      // console.log("\n\n\n\nMy Fav Result is....." + JSON.stringify(result2)+"\n\n\n\n\n");
+
+      // console.log("Current resultr is......."+JSON.stringify(result.user.communityId));
+      // await console.log("Result123 is...." +JSON.stringify(JSON.parse(result)));
+      let final_result: ResponseModel<TDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null)
+      console.log("Setting result......")
+      await final_result.setDataCollection(result);
+      console.log("Final_result is......" + JSON.stringify(final_result));
+      
+      console.log("\n\n\n\n\nresult1 is....." + JSON.stringify(result));
+      return final_result;
+    }
+    catch (err) {
+      console.log("Error is......." + JSON.stringify(err));
+      let final_result: ResponseModel<TDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.error, "500", null, null, null, null, err)
+
+      throw final_result;
+    };
   }
 
   public iterate(obj, stack) {
