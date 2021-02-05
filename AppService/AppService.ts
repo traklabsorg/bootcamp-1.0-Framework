@@ -633,16 +633,23 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
 
 
 
-  public async getChildrenIds(children: string[],id:number, child ?:string): Promise<ResponseModel<any>>{
+  public async getChildrenIds(children: string[],ids:number[], child ?:string): Promise<ResponseModel<any>>{
     try {
 
-      console.log("Children is....." + children);
-      console.log("Child is...."+child);
+      // console.log("Children is....." + children);
+      // console.log("Child is...."+child);
       // let queryField = this.genericRepository.createQueryBuilder().select("entity").from(this.entityClassType, "entity");
+      console.log("Inside getChildrenIds....ids are......",ids);
+      if(ids.length == 0 || ids == null){
+        let final_result: ResponseModel<TDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null)
+      console.log("Setting result......")
+      final_result.setDataCollection([]);
+      return final_result;
+      }
       let queryField = this.genericRepository.createQueryBuilder(children[0]);
       // if(child!=null || child.length != 0)
       
-      let result3 = queryField.getMany();
+      // let result3 = queryField.getMany();
      // console.log("Result is....." + JSON.stringify(result3));
       let length_of_array = children.length;
       if (length_of_array != 0) {
@@ -651,6 +658,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
         for (let i = 0; i <length_of_array - 1 ; i++) {
           console.log("\n\n\n\n",children[i],children[i+1],"\n\n\n\n")
           queryField.leftJoinAndSelect(children[i] + "." + children[i+1], children[i+1])
+          // let result3 = queryField.getMany();
           // console.log("query inside loop...."+queryField.getSql())
         }
       };
@@ -661,12 +669,18 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
      // console.log("result1 is............" + JSON.stringify(result1));
       // queryField = queryField.select([children[length_of_array] + ".Id"]);
       // console.log("sql query for GenericEntity is......" + queryField.getSql());
-      let myJSON = {};
-      myJSON['Id'] = id;
+      // let myJSON = {};
+      // myJSON['Id'] = id;
 
       //queryField = queryField.where("group_user.id=1");
       // queryField.where(children[0] + ".id=:Id", myJSON);
-      queryField.where(children[length_of_array-1]+".id=:Id",myJSON);
+      ids.forEach( (id:number)=>{
+        let myJSON = {};
+        console.log("id type is....",id)
+        myJSON['Id'+id] = id;
+        queryField.orWhere(children[length_of_array-1] + ".id=:Id"+id, myJSON)
+      })
+      // queryField.where(children[length_of_array-1]+".id=:Id",myJSON);
       // queryField.addSelect("user.community_id");
       queryField.addSelect(children[0] + ".id");
       // console.log("sql query for GenericEntity  2 is......" + queryField.getSql());
@@ -684,9 +698,9 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
       let final_result: ResponseModel<TDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null)
       console.log("Setting result......")
       await final_result.setDataCollection(result);
-      console.log("Final_result is......" + JSON.stringify(final_result));
+      // console.log("Final_result is......" + JSON.stringify(final_result));
       
-      console.log("\n\n\n\n\nresult1 is....." + JSON.stringify(result));
+      // console.log("\n\n\n\n\nresult1 is....." + JSON.stringify(result));
       return final_result;
     }
     catch (err) {
