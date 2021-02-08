@@ -232,6 +232,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
       let result = await this.mapToEntity(entities.getDataCollection());
       console.log("Result is....." + JSON.stringify(result));
       await this.genericRepository.remove(result);
+      // await this.genericRepository.delete()
       let final_result:ResponseModel<TDto> = new ResponseModel(null,null,null,"200",null,null,null,null,null)
 
       final_result.setDataCollection(entities.getDataCollection())
