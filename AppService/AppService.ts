@@ -51,7 +51,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
 
   // private type: ObjectType<TEntity>;
   
-  constructor(public http:HttpService,private readonly genericRepository: Repository<TEntity>, private type3: ObjectType<TEntity>,private entityClassType:ClassType<TEntity>,private dtoClassType:ClassType<TDto>,entityMap: Record<string, unknown>, dtoMap: Record<string, unknown>, entityToDtoMap: Record<string, unknown>, dtoToEntityMap: Record<string, unknown>) {
+  constructor(public http:HttpService,public readonly genericRepository: Repository<TEntity>, private type3: ObjectType<TEntity>,private entityClassType:ClassType<TEntity>,private dtoClassType:ClassType<TDto>,entityMap: Record<string, unknown>, dtoMap: Record<string, unknown>, entityToDtoMap: Record<string, unknown>, dtoToEntityMap: Record<string, unknown>) {
     this.entityMap = entityMap;
     this.dtoMap = dtoMap;
     this.entityToDtoMap = entityToDtoMap;
@@ -321,43 +321,9 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
   //   })
   //  }
 
-
-  private async createQueryByRequestModelQuery(requestModel: RequestModelQuery): Promise<SelectQueryBuilder<TEntity>>{
-    try { 
-      console.log("Inside createQueryByRequestModelQuery baby......requestModel is...." + JSON.stringify(requestModel));
-      let orderBy = 'ASC';
-      let orderByField = 'Id';
-      let isCaseInsensitiveSearch = false;
-      if (requestModel != null && requestModel.Filter != null) {
-        orderBy = !requestModel.Filter.IsOrderByFieldAsc ? 'DESC' : orderBy;
-        orderByField = requestModel.Filter.OrderByField != null ? requestModel.Filter.OrderByField : orderByField;
-
-      }
-
-      console.log("requestmodel.children is....." + requestModel.Children)
-
-
-      console.log("here......12345");
-      
-      let queryField = this.genericRepository.createQueryBuilder(requestModel.Children[0]);
-      // let x = queryField.getMany();
-      // console.log("x is...."+JSON.stringify(x));
-      
-      // console.log("QueryField is,........"+JSON.stringify(queryField))
-      // if (select != null) {
-      //   console.log("\n\n\n\nelect != null.....................\n\n\n\n\n")
-      //   queryField.addSelect("COUNT('groupUser.groupId')",'count_temp')
-      // }
-      // let result123 = await this.genericRepository.query('SELECT COUNT(DISTINCT("groupUser"."id")) AS "cnt" FROM "groupUsers" "groupUser" INNER JOIN "users" "user" ON "user"."id"="groupUser"."user_id"  INNER JOIN "groups" "group" ON "group"."id"="groupUser"."group_id" WHERE "groupUser"."group_image"=\'groupImage2\'');
-
-      if (requestModel.Children != null && requestModel.Children.length > 0) {
-        for (let i = 1; i < requestModel.Children.length; i++) {
-          queryField = queryField.innerJoinAndSelect(requestModel.Children[0] + "." + requestModel.Children[i], requestModel.Children[i]);
-        }
-      }
-      // console.log("After passing children.....queryField is....." + queryField.getSql());
-      // console.log("1st half query result is........" + queryField.getMany());
-      console.log("Length is...." + requestModel.Filter.Conditions.length + "\n\n\n\n\n\n\n");
+  private async assignConditionsToRequestModelQuery(requestModel:RequestModelQuery,queryField:SelectQueryBuilder<TEntity>):Promise<SelectQueryBuilder<TEntity>>{
+    try{
+    console.log("Length is...." + requestModel.Filter.Conditions.length + "\n\n\n\n\n\n\n");
       let i = 0;
       if (requestModel.Filter.Conditions != null && requestModel.Filter.Conditions.length > 0) {
         i = requestModel.Filter.Conditions.length;
@@ -437,6 +403,51 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
           }
         }
       }
+      return queryField;
+    }
+    catch (err) {
+      console.log("Error thrown from assignConditionsToRequestModelQuery....... Error is....."+JSON.stringify(err));
+      throw err;
+    }
+  }
+
+
+  private async createQueryByRequestModelQuery(requestModel: RequestModelQuery): Promise<SelectQueryBuilder<TEntity>>{
+    try { 
+      console.log("Inside createQueryByRequestModelQuery baby......requestModel is...." + JSON.stringify(requestModel));
+      let orderBy = 'ASC';
+      let orderByField = 'Id';
+      let isCaseInsensitiveSearch = false;
+      if (requestModel != null && requestModel.Filter != null) {
+        orderBy = !requestModel.Filter.IsOrderByFieldAsc ? 'DESC' : orderBy;
+        orderByField = requestModel.Filter.OrderByField != null ? requestModel.Filter.OrderByField : orderByField;
+
+      }
+
+      console.log("requestmodel.children is....." + requestModel.Children)
+
+
+      console.log("here......12345");
+      
+      let queryField = this.genericRepository.createQueryBuilder(requestModel.Children[0]);
+      // let x = queryField.getMany();
+      // console.log("x is...."+JSON.stringify(x));
+      
+      // console.log("QueryField is,........"+JSON.stringify(queryField))
+      // if (select != null) {
+      //   console.log("\n\n\n\nelect != null.....................\n\n\n\n\n")
+      //   queryField.addSelect("COUNT('groupUser.groupId')",'count_temp')
+      // }
+      // let result123 = await this.genericRepository.query('SELECT COUNT(DISTINCT("groupUser"."id")) AS "cnt" FROM "groupUsers" "groupUser" INNER JOIN "users" "user" ON "user"."id"="groupUser"."user_id"  INNER JOIN "groups" "group" ON "group"."id"="groupUser"."group_id" WHERE "groupUser"."group_image"=\'groupImage2\'');
+
+      if (requestModel.Children != null && requestModel.Children.length > 0) {
+        for (let i = 1; i < requestModel.Children.length; i++) {
+          queryField = queryField.innerJoinAndSelect(requestModel.Children[0] + "." + requestModel.Children[i], requestModel.Children[i]);
+        }
+      }
+      // console.log("After passing children.....queryField is....." + queryField.getSql());
+      // console.log("1st half query result is........" + queryField.getMany());
+      
       // if (select != null) {
         // return queryField.select(['groupUser.Id', "COUNT('groupUser.Id')"])
         // return queryField.select([ "COUNT('groupUser.Id')"])
@@ -446,6 +457,10 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
         // queryField = queryField.addSelect('user.userEmail','userEmail')
         // return queryField.select(['groupUser.groupId', "COUNT(\"groupUser\".\"id\")"])
       // }
+
+      queryField = await this.assignConditionsToRequestModelQuery(requestModel,queryField);
+
+
       return queryField;
     }
     catch (err) {
@@ -455,17 +470,72 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
     
   }
 
-  public async search(requestModel: RequestModelQuery): Promise<ResponseModel<TDto>> {
-    try {
-      let queryField: any = await this.createQueryByRequestModelQuery(requestModel);
+
+
+  private async createQueryByCustomApiRequirement(requestModel: RequestModelQuery,entityArrays?:Array<Array<string>>): Promise<SelectQueryBuilder<TEntity>>{
+    try { 
+      console.log("Inside createQueryByCustomApiRequirement baby......requestModel is...." + JSON.stringify(requestModel));
+      let orderBy = 'ASC';
+      let orderByField = 'Id';
+      let isCaseInsensitiveSearch = false;
+      if (requestModel != null && requestModel.Filter != null) {
+        orderBy = !requestModel.Filter.IsOrderByFieldAsc ? 'DESC' : orderBy;
+        orderByField = requestModel.Filter.OrderByField != null ? requestModel.Filter.OrderByField : orderByField;
+
+      }
       
-      // let totalRecords = await queryField.getCount();
-      // console.log("totalRecords is....." + JSON.stringify(totalRecords));
+      let queryField = this.genericRepository.createQueryBuilder(requestModel.Children[0]);
+
+      if (entityArrays!= null) {
+        entityArrays.forEach((entityArray:Array<string>)=>{
+          queryField = queryField.innerJoinAndSelect(entityArray[0] + "." + entityArray[1], entityArray[1]);
+        })
+      }
+
+      queryField = await this.assignConditionsToRequestModelQuery(requestModel,queryField);
+
+
+      return queryField;
+    }
+    catch (err) {
+      console.log("Error thrown from createQueryByRequestModelQuery....... Error is....."+JSON.stringify(err));
+      throw err;
+    }
+    
+  }
+
+
+
+  public async divideQueryByPageSizeAndPageNo(requestModel:RequestModelQuery,queryField:SelectQueryBuilder<TEntity>):Promise<SelectQueryBuilder<TEntity>>{
+    try{
       if (requestModel.Filter.PageInfo != null) {
         queryField = queryField.skip((requestModel.Filter.PageInfo.PageSize) *
           (requestModel.Filter.PageInfo.PageNumber - 1))
           .take(requestModel.Filter.PageInfo.PageSize);
       }
+      return queryField;
+  }
+  catch (err) {
+    console.log("Error thrown from createQueryByRequestModelQuery....... Error is....."+JSON.stringify(err));
+    throw err;
+  }
+  }
+
+  public async search(requestModel: RequestModelQuery,isCustomApi?:boolean,entityArray?:Array<Array<string>>): Promise<ResponseModel<TDto>> {
+    try {
+      let queryField:any = null;
+      if(isCustomApi!= null && isCustomApi == true){
+        queryField = await this.createQueryByCustomApiRequirement(requestModel,entityArray);
+      }
+      else{
+        queryField = await this.createQueryByRequestModelQuery(requestModel);
+      }
+
+      queryField = await this.divideQueryByPageSizeAndPageNo(requestModel,queryField);
+      
+      // let totalRecords = await queryField.getCount();
+      // console.log("totalRecords is....." + JSON.stringify(totalRecords));
+      
       // if (requestModel.Filter.PageInfo != null) {
       //   queryField= queryField.
       //     take(19);
@@ -488,6 +558,13 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
       throw final_result;
     };
     
+  }
+
+  public async getDataForCustomSituations(entityArray:Array<Array<string>>) : Promise<ResponseModel<TDto>> {
+    
+    return null;
+
+
   }
 
   public async getCountByConditions(requestModel: RequestModelQuery): Promise<any>{
@@ -723,7 +800,13 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
             }
         }
     }
+
+
+
 }
+
+
+
 
 
 
