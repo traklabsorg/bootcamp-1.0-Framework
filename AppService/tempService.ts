@@ -51,7 +51,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
 
   // private type: ObjectType<TEntity>;
   
-  constructor(public http:HttpService,public readonly genericRepository: Repository<TEntity>, private type3: ObjectType<TEntity>,private entityClassType:ClassType<TEntity>,private dtoClassType:ClassType<TDto>,entityMap: Record<string, unknown>, dtoMap: Record<string, unknown>, entityToDtoMap: Record<string, unknown>, dtoToEntityMap: Record<string, unknown>) {
+  constructor(public http:HttpService,private readonly genericRepository: Repository<TEntity>, private type3: ObjectType<TEntity>,private entityClassType:ClassType<TEntity>,private dtoClassType:ClassType<TDto>,entityMap: Record<string, unknown>, dtoMap: Record<string, unknown>, entityToDtoMap: Record<string, unknown>, dtoToEntityMap: Record<string, unknown>) {
     this.entityMap = entityMap;
     this.dtoMap = dtoMap;
     this.entityToDtoMap = entityToDtoMap;
@@ -89,241 +89,47 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
 // }
   
   
-  addDtoMap(map: Record<string, unknown>) {
-    this.entityMap = map;
-  }
-  addEntityMap(map: Record<string, unknown>) {
-    this.dtoMap = map;
-  }
+  
 
-  addEntityToDtoMap(map: Record<string, unknown>) {
-    this.entityToDtoMap = map;
-  }
-
-  addDtoToEntityMap(map: Record<string, unknown>) {
-    this.dtoToEntitymap = map;
-  }
-
-  async mapToDto(entities: TEntity[]): Promise<TDto[]>{
-    try {
-      let result: TDto[] = [];
-      let dto: TDto;
-      Promise.all(entities.map(async (entity: TEntity) => {
-        await result.push(plainToClass(this.dtoClassType,objectMapper(entity,this.entityToDtoMap)))
-      }))
+  private async createQueryByRequestModelQuery(requestModel: RequestModelQuery): Promise<SelectQueryBuilder<TEntity>>{
+    try { 
+      console.log("Inside createQueryByRequestModelQuery baby......requestModel is...." + JSON.stringify(requestModel));
+      let orderBy = requestModel.Filter.IsOrderByFieldAsc==null?true:requestModel.Filter.IsOrderByFieldAsc;
+      let orderByField = requestModel.Filter.OrderByField == null ? 'Id' : requestModel.Filter.OrderByField;
       
-      return result;
-    }
-    catch (error) {
-      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-  }
+      console.log("\n\n\n\n\n\n\n\n\n\nOrderBy is......", orderBy);
+      console.log("OrderByField is/................",orderByField,"\n\n\n\n\n\n\n\n\n\n")
+      let isCaseInsensitiveSearch = false;
+      if (requestModel != null && requestModel.Filter != null) {
+        // let orderBy = requestModel.Filter.IsOrderByFieldAsc==null?'ASC':requestModel.Filter.IsOrderByFieldAsc;;
+        // let orderByField = 
 
-  async mapToEntity(dtos: TDto[]): Promise<TEntity[]>{
-    try {
-      let result: TEntity[] = [];
-      let entity: TEntity;
-      
-      Promise.all(dtos.map(async (dto: TDto) => {
-                await result.push(plainToClass(this.entityClassType,objectMapper(dto,this.entityToDtoMap)))
-      }))
-
-
-      return result;
-    }
-    catch (error) {
-      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-  }
-
-  async getByIds(id: any[]): Promise<ResponseModel<TDto>>{
-    try {
-      let final_result: ResponseModel<TDto> = new ResponseModel("123", null, null, "123", "123", "gft", null,null,null);
-      console.log("ids...." + JSON.stringify(id));
-      final_result.setDataCollection(await this.mapToDto(await this.genericRepository.findByIds(id)))
-      return final_result;
-    }
-    catch (error) {
-      console.log("Error is....." + error);
-      // throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
-      throw new Error(error);
-    }
-    
-  }
-
-  async getAll(): Promise<ResponseModel<TDto>> {
-    try {
-      let result = await this.genericRepository.find();
-
-      
-      let final_result: ResponseModel<TDto> = new ResponseModel("123", null, null, "123", "123", "gft", null,null,null);
-      console.log("result is....." + JSON.stringify(result));
-      final_result.setDataCollection(await this.mapToDto(result));
-      return final_result;
-    }
-    catch (error) {
-      console.log("Error is....." + error);
-      // throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
-      throw new Error(error);
-    }
-  }
-
-  async create(entity: RequestModel<TDto>): Promise<ResponseModel<TDto>> {
-    try {
-      await console.log("Inside insert of generic repository...entity is...." + JSON.stringify(entity));
-      var result: TDto[] = [];
-    
-      let result1: any;
-      //entity
-      let requestGuid = entity.RequestGuid;
-      let socketId = entity.SocketId;
-
-      //Add implicit filter toeach record in the dataCollection via Filters.
-      //----------------------------------------------------------------
-      /*
-      {
-        "field1":"ssome value",
-        "community_id"= <community_id from cache/request object> only if the property has community_id
-        //This has to be level wise, for level 1 you will get it directly
-        //Here we are adding implicit filter for every record that goes inside the DB
       }
 
-      */
-     
-      // let final_result: ResponseModel<TDto> = new ResponseModel(entity.RequestGuid,entity.SocketId, null, null, "123", "123", "gft", null);
+      console.log("requestmodel.children is....." + requestModel.Children)
+
+
+      console.log("here......12345");
       
-      await Promise.all(entity.DataCollection.map(async (entity_sample) => {
-        // console.log("Entity sample is......" + JSON.stringify(entity_sample));
-        console.log("Map is......" + JSON.stringify(this.entityMap));
-        // console.log("result....." + objectMapper(entity_sample, this.entityMap));
+      let queryField = this.genericRepository.createQueryBuilder(requestModel.Children[0]);
+      // let x = queryField.getMany();
+      // console.log("x is...."+JSON.stringify(x));
       
-        result1 = await this.genericRepository.save(objectMapper(entity_sample, this.entityMap))
-        console.log("result is......." + JSON.stringify(result1));
-        // result1 = await this.genericRepository.save(entity_sample)
-      
-        await result.push(result1)
-        await console.log("present result is......" + JSON.stringify(result));
-      })
-      );
-      console.log("Returning result1....." + JSON.stringify(result));
-      // result.forEach((entity:TEntity)=>)
-      // let successResponseModel = ResponseModel<TDto>
-      let final_result:ResponseModel<TDto> = new ResponseModel(entity.RequestGuid,null,ServiceOperationResultType.success,"200",null,null,null,entity.SocketId,entity.CommunityUrl)
-      final_result.setDataCollection(result);
-      final_result.setSocketId(entity.SocketId);
-      return final_result;
-      
-      
-    }
-    catch (error){
-      console.log("Error occured while inserting entity....." + error);
-      let final_result:ResponseModel<TDto> = new ResponseModel(entity.RequestGuid,null,ServiceOperationResultType.error,"500",null,null,null,entity.SocketId,entity.CommunityUrl)
+      // console.log("QueryField is,........"+JSON.stringify(queryField))
+      // if (select != null) {
+      //   console.log("\n\n\n\nelect != null.....................\n\n\n\n\n")
+      //   queryField.addSelect("COUNT('groupUser.groupId')",'count_temp')
+      // }
+      // let result123 = await this.genericRepository.query('SELECT COUNT(DISTINCT("groupUser"."id")) AS "cnt" FROM "groupUsers" "groupUser" INNER JOIN "users" "user" ON "user"."id"="groupUser"."user_id"  INNER JOIN "groups" "group" ON "group"."id"="groupUser"."group_id" WHERE "groupUser"."group_image"=\'groupImage2\'');
 
-      throw new HttpException(final_result, HttpStatus.INTERNAL_SERVER_ERROR);
-    };
-    
-  }
-
-  async deleteById(ids: any[]): Promise<ResponseModel<TDto>> {
-    const entities = await this.getByIds(ids);
-    console.log("Entites to be deleted are......" + JSON.stringify(entities));
-    
-    if (entities.getDataCollection().length != 0) {
-      let result = await this.mapToEntity(entities.getDataCollection());
-      console.log("Result is....." + JSON.stringify(result));
-      await this.genericRepository.remove(result);
-      // await this.genericRepository.delete()
-      let final_result:ResponseModel<TDto> = new ResponseModel(null,null,null,"200",null,null,null,null,null)
-
-      final_result.setDataCollection(entities.getDataCollection())
-      return final_result;
-    }
-    // return await this.genericRepository.remove(ids)
-    throw new HttpException("No such id found ", HttpStatus.NOT_FOUND);
-  }
-
-  async updateEntity(dtos: RequestModel<TDto>): Promise<ResponseModel<TDto>>{
-    try {
-      await console.log("Inside update of generic repository...entity is...." + JSON.stringify(dtos));
-      var result: TDto[] = [];
-      var ids: number[] = [];
-      let result1: any;
-      var result2: any;
-      var entities: TEntity[] = [];
-      await Promise.all(dtos.DataCollection.map(async (dto_sample:any) => {
-        // console.log("Entity sample is......" + JSON.stringify(entity_sample));
-        console.log("Map is......" + JSON.stringify(this.entityMap));
-        // console.log("result....." + objectMapper(entity_sample, this.entityMap));
-        await entities.push(objectMapper(dto_sample, this.entityMap));
-        result1 = await this.genericRepository.update(dto_sample.Id, dto_sample);
-        // result2 = await this.genericRepository.merge()
-        // const entity = await this.genericRepository.findOne(dto_sample.Id);
-        // result1 = this.genericRepository.save(id:dto_sample.id, ...dto_sample);
-        await result.push(result1);
-        console.log("result is......." + JSON.stringify(result1));
-        await console.log("present result is......" + JSON.stringify(result));
-      })
-      );
-      let final_result:ResponseModel<TDto> = new ResponseModel(dtos.RequestGuid,null,ServiceOperationResultType.success,"200",null,null,null,dtos.SocketId,dtos.CommunityUrl)
-      final_result.setDataCollection(dtos.DataCollection);
-      return final_result;
-      
-    }
-    catch (err)
-    {
-      let final_result:ResponseModel<TDto> = new ResponseModel(dtos.RequestGuid,null,ServiceOperationResultType.failure,"500",null,null,[err],dtos.SocketId,dtos.CommunityUrl)
-      final_result.setDataCollection(dtos.DataCollection);
-      final_result.setMessage("500",err.detail)
-      throw new HttpException(final_result, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-  }
-
-
-  // TODO :- refractor parametres........
-  async deleteByIds(entity: RequestModel<TDto>): Promise<ResponseModel<TDto>> {
-    try {
-      await console.log("Inside delete of generic repository...entity is...." + JSON.stringify(entity));
-      var result: TDto[] = [];
-    
-      let result1: any;
-      //entity
-      const entities = await this.getByIds(entity.DataCollection)
-     
-      // let final_result: ResponseModel<TDto> = new ResponseModel(entity.RequestGuid,entity.SocketId, null, null, "123", "123", "gft", null);
-      
-      this.genericRepository.remove(await this.mapToEntity(entities.getDataCollection()));
-      console.log("Returning result1....." + JSON.stringify(result));
-      // result.forEach((entity:TEntity)=>)
-      // let successResponseModel = ResponseModel<TDto>
-      let final_result:ResponseModel<TDto> = new ResponseModel(entity.RequestGuid,null,ServiceOperationResultType.success,"200",null,null,null,entity.SocketId,entity.CommunityUrl)
-      final_result.setDataCollection(entities.getDataCollection());
-      return final_result;
-      
-      
-    }
-    catch (error){
-      console.log("Error occured while deleting entity....." + error);
-      let final_result:ResponseModel<TDto> = new ResponseModel(entity.RequestGuid,null,ServiceOperationResultType.error,"500",null,null,null,entity.SocketId,entity.CommunityUrl)
-
-      throw new HttpException(final_result, HttpStatus.INTERNAL_SERVER_ERROR);
-    };
-    
-  }
-
-
-
-  // async updateById(entities: TEntity[]): Promise<TEntity[]> {
-  //   this.genericRepository.createQueryBuilder("Entity").
-  //   entities.forEach((entity_sample: TEntity) => {
-  //     this.genericRepository.findByIds([entity_sample.Id]).then(responseGet => try {
-        
-  //     })
-  //   })
-  //  }
-
-  private async assignConditionsToRequestModelQuery(requestModel:RequestModelQuery,queryField:SelectQueryBuilder<TEntity>):Promise<SelectQueryBuilder<TEntity>>{
-    try{
-    console.log("Length is...." + requestModel.Filter.Conditions.length + "\n\n\n\n\n\n\n");
+      if (requestModel.Children != null && requestModel.Children.length > 0) {
+        for (let i = 1; i < requestModel.Children.length; i++) {
+          queryField = queryField.innerJoinAndSelect(requestModel.Children[0] + "." + requestModel.Children[i], requestModel.Children[i]);
+        }
+      }
+      // console.log("After passing children.....queryField is....." + queryField.getSql());
+      // console.log("1st half query result is........" + queryField.getMany());
+      console.log("Length is...." + requestModel.Filter.Conditions.length + "\n\n\n\n\n\n\n");
       let i = 0;
       if (requestModel.Filter.Conditions != null && requestModel.Filter.Conditions.length > 0) {
         i = requestModel.Filter.Conditions.length;
@@ -403,51 +209,6 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
           }
         }
       }
-      return queryField;
-    }
-    catch (err) {
-      console.log("Error thrown from assignConditionsToRequestModelQuery....... Error is....."+JSON.stringify(err));
-      throw err;
-    }
-  }
-
-
-  private async createQueryByRequestModelQuery(requestModel: RequestModelQuery): Promise<SelectQueryBuilder<TEntity>>{
-    try { 
-      console.log("Inside createQueryByRequestModelQuery baby......requestModel is...." + JSON.stringify(requestModel));
-      let orderBy = requestModel.Filter.IsOrderByFieldAsc==null?true:requestModel.Filter.IsOrderByFieldAsc;
-      let orderByField = requestModel.Filter.OrderByField == null ? 'Id' : requestModel.Filter.OrderByField;
-      let isCaseInsensitiveSearch = false;
-      // if (requestModel != null && requestModel.Filter != null) {
-      //   orderBy = !requestModel.Filter.IsOrderByFieldAsc ? 'DESC' : orderBy;
-      //   orderByField = requestModel.Filter.OrderByField != null ? requestModel.Filter.OrderByField : orderByField;
-
-      // }
-
-      console.log("requestmodel.children is....." + requestModel.Children)
-
-
-      console.log("here......12345");
-      
-      let queryField = this.genericRepository.createQueryBuilder(requestModel.Children[0]);
-      // let x = queryField.getMany();
-      // console.log("x is...."+JSON.stringify(x));
-      
-      // console.log("QueryField is,........"+JSON.stringify(queryField))
-      // if (select != null) {
-      //   console.log("\n\n\n\nelect != null.....................\n\n\n\n\n")
-      //   queryField.addSelect("COUNT('groupUser.groupId')",'count_temp')
-      // }
-      // let result123 = await this.genericRepository.query('SELECT COUNT(DISTINCT("groupUser"."id")) AS "cnt" FROM "groupUsers" "groupUser" INNER JOIN "users" "user" ON "user"."id"="groupUser"."user_id"  INNER JOIN "groups" "group" ON "group"."id"="groupUser"."group_id" WHERE "groupUser"."group_image"=\'groupImage2\'');
-
-      if (requestModel.Children != null && requestModel.Children.length > 0) {
-        for (let i = 1; i < requestModel.Children.length; i++) {
-          queryField = queryField.innerJoinAndSelect(requestModel.Children[0] + "." + requestModel.Children[i], requestModel.Children[i]);
-        }
-      }
-      // console.log("After passing children.....queryField is....." + queryField.getSql());
-      // console.log("1st half query result is........" + queryField.getMany());
-      
       // if (select != null) {
         // return queryField.select(['groupUser.Id', "COUNT('groupUser.Id')"])
         // return queryField.select([ "COUNT('groupUser.Id')"])
@@ -457,16 +218,11 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
         // queryField = queryField.addSelect('user.userEmail','userEmail')
         // return queryField.select(['groupUser.groupId', "COUNT(\"groupUser\".\"id\")"])
       // }
-
-      queryField = await this.assignConditionsToRequestModelQuery(requestModel,queryField);
-
       if (orderBy == true)
         return queryField.orderBy(requestModel.Children[0] + "." + orderByField, 'ASC');
       else
-        return queryField.orderBy(requestModel.Children[0] + "." +orderByField,'DESC');
-
-
-      return queryField;
+      return queryField.orderBy(requestModel.Children[0] + "." +orderByField,'DESC');
+      
     }
     catch (err) {
       console.log("Error thrown from createQueryByRequestModelQuery....... Error is....."+JSON.stringify(err));
@@ -475,86 +231,17 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
     
   }
 
-
-
-  private async createQueryByCustomApiRequirement(requestModel: RequestModelQuery,entityArrays?:Array<Array<string>>): Promise<SelectQueryBuilder<TEntity>>{
-    try { 
-      console.log("Inside createQueryByCustomApiRequirement baby......requestModel is...." + JSON.stringify(requestModel));
-      // let orderBy = true;
-      // let orderByField = 'Id';
-      let isCaseInsensitiveSearch = false;
-      console.log(requestModel);
-      let orderBy = true;
-      let orderByField = 'Id'
-      console.log(requestModel.Filter.IsOrderByFieldAsc)
-      console.log(typeof(requestModel.Filter.IsOrderByFieldAsc))
-      if(typeof(requestModel.Filter.IsOrderByFieldAsc)!= 'undefined'){
-        console.log("Undefined Condition Failed");
-      orderBy = requestModel.Filter.IsOrderByFieldAsc
-      }
-      if(typeof(requestModel.Filter.OrderByField)!= 'undefined')
-      orderByField = requestModel.Filter.OrderByField
-      // let orderBy = requestModel.Filter.IsOrderByFieldAsc==undefined?true:requestModel.Filter.IsOrderByFieldAsc;
-      // let orderByField = requestModel.Filter.OrderByField == undefined ? 'Id' : requestModel.Filter.OrderByField;
+  public async search(requestModel: RequestModelQuery): Promise<ResponseModel<TDto>> {
+    try {
+      let queryField: any = await this.createQueryByRequestModelQuery(requestModel);
       
-      console.log(orderByField)
-
-      let queryField = this.genericRepository.createQueryBuilder(entityArrays[0][0]);
-
-      if (entityArrays!= null) {
-        entityArrays.forEach((entityArray:Array<string>)=>{
-          queryField = queryField.innerJoinAndSelect(entityArray[0] + "." + entityArray[1], entityArray[1]);
-        })
-      }
-      requestModel.Children = [entityArrays[0][0]];
-      queryField = await this.assignConditionsToRequestModelQuery(requestModel,queryField);
-
-      if (orderBy == true)
-        return queryField.orderBy(requestModel.Children[0] + "." + orderByField, 'ASC');
-      else
-      return queryField.orderBy(requestModel.Children[0] + "." +orderByField,'DESC');
-
-      // return queryField;
-    }
-    catch (err) {
-      console.log("Error thrown from createQueryByCustomApiRequirement....... Error is....."+JSON.stringify(err));
-      throw err;
-    }
-    
-  }
-
-
-
-  public async divideQueryByPageSizeAndPageNo(requestModel:RequestModelQuery,queryField:SelectQueryBuilder<TEntity>):Promise<SelectQueryBuilder<TEntity>>{
-    try{
+      // let totalRecords = await queryField.getCount();
+      // console.log("totalRecords is....." + JSON.stringify(totalRecords));
       if (requestModel.Filter.PageInfo != null) {
         queryField = queryField.skip((requestModel.Filter.PageInfo.PageSize) *
           (requestModel.Filter.PageInfo.PageNumber - 1))
           .take(requestModel.Filter.PageInfo.PageSize);
       }
-      return queryField;
-  }
-  catch (err) {
-    console.log("Error thrown from createQueryByRequestModelQuery....... Error is....."+JSON.stringify(err));
-    throw err;
-  }
-  }
-
-  public async search(requestModel: RequestModelQuery,isCustomApi?:boolean,entityArray?:Array<Array<string>>): Promise<ResponseModel<TDto>> {
-    try {
-      let queryField:any = null;
-      if(isCustomApi!= null && isCustomApi == true){
-        queryField = await this.createQueryByCustomApiRequirement(requestModel,entityArray);
-      }
-      else{
-        queryField = await this.createQueryByRequestModelQuery(requestModel);
-      }
-
-      queryField = await this.divideQueryByPageSizeAndPageNo(requestModel,queryField);
-      
-      // let totalRecords = await queryField.getCount();
-      // console.log("totalRecords is....." + JSON.stringify(totalRecords));
-      
       // if (requestModel.Filter.PageInfo != null) {
       //   queryField= queryField.
       //     take(19);
@@ -565,9 +252,9 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
       let final_result: ResponseModel<TDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null)
       console.log("Setting result......")
       await final_result.setDataCollection(result);
-      console.log("Final_result is......" + JSON.stringify(final_result));
+      // console.log("Final_result is......" + JSON.stringify(final_result));
       
-      console.log("\n\n\n\n\nresult1 is....." + JSON.stringify(result));
+      // console.log("\n\n\n\n\nresult1 is....." + JSON.stringify(result));
       return final_result;
     }
     catch (err) {
@@ -577,13 +264,6 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
       throw final_result;
     };
     
-  }
-
-  public async getDataForCustomSituations(entityArray:Array<Array<string>>) : Promise<ResponseModel<TDto>> {
-    
-    return null;
-
-
   }
 
   public async getCountByConditions(requestModel: RequestModelQuery): Promise<any>{
@@ -730,23 +410,16 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
 
 
 
-  public async getChildrenIds(children: string[],ids:number[], child ?:string): Promise<ResponseModel<any>>{
+  public async getChildrenIds(children: string[],id:number, child ?:string): Promise<ResponseModel<any>>{
     try {
 
-      // console.log("Children is....." + children);
-      // console.log("Child is...."+child);
+      console.log("Children is....." + children);
+      console.log("Child is...."+child);
       // let queryField = this.genericRepository.createQueryBuilder().select("entity").from(this.entityClassType, "entity");
-      console.log("Inside getChildrenIds....ids are......",ids);
-      if(ids.length == 0 || ids == null){
-        let final_result: ResponseModel<TDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null)
-      console.log("Setting result......")
-      final_result.setDataCollection([]);
-      return final_result;
-      }
       let queryField = this.genericRepository.createQueryBuilder(children[0]);
       // if(child!=null || child.length != 0)
       
-      // let result3 = queryField.getMany();
+      let result3 = queryField.getMany();
      // console.log("Result is....." + JSON.stringify(result3));
       let length_of_array = children.length;
       if (length_of_array != 0) {
@@ -755,7 +428,6 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
         for (let i = 0; i <length_of_array - 1 ; i++) {
           console.log("\n\n\n\n",children[i],children[i+1],"\n\n\n\n")
           queryField.leftJoinAndSelect(children[i] + "." + children[i+1], children[i+1])
-          // let result3 = queryField.getMany();
           // console.log("query inside loop...."+queryField.getSql())
         }
       };
@@ -766,18 +438,12 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
      // console.log("result1 is............" + JSON.stringify(result1));
       // queryField = queryField.select([children[length_of_array] + ".Id"]);
       // console.log("sql query for GenericEntity is......" + queryField.getSql());
-      // let myJSON = {};
-      // myJSON['Id'] = id;
+      let myJSON = {};
+      myJSON['Id'] = id;
 
       //queryField = queryField.where("group_user.id=1");
       // queryField.where(children[0] + ".id=:Id", myJSON);
-      ids.forEach( (id:number)=>{
-        let myJSON = {};
-        console.log("id type is....",id)
-        myJSON['Id'+id] = id;
-        queryField.orWhere(children[length_of_array-1] + ".id=:Id"+id, myJSON)
-      })
-      // queryField.where(children[length_of_array-1]+".id=:Id",myJSON);
+      queryField.where(children[length_of_array-1]+".id=:Id",myJSON);
       // queryField.addSelect("user.community_id");
       queryField.addSelect(children[0] + ".id");
       // console.log("sql query for GenericEntity  2 is......" + queryField.getSql());
@@ -819,13 +485,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
             }
         }
     }
-
-
-
 }
-
-
-
 
 
 

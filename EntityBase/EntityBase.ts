@@ -52,6 +52,8 @@ export class EntityBase {
     @Exclude({toClassOnly:true})
     //@Column({select:false})
     EntityState: number;    // 1 = create, 2 = update, 3 = delete,  0 = unchanged
+
+    
 }
 /*
   Group
