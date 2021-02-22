@@ -124,7 +124,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
 
       if (requestModel.Children != null && requestModel.Children.length > 0) {
         for (let i = 1; i < requestModel.Children.length; i++) {
-          queryField = queryField.innerJoinAndSelect(requestModel.Children[0] + "." + requestModel.Children[i], requestModel.Children[i]);
+          queryField = queryField.leftJoinAndSelect(requestModel.Children[0] + "." + requestModel.Children[i], requestModel.Children[i]);
         }
       }
       // console.log("After passing children.....queryField is....." + queryField.getSql());
@@ -326,7 +326,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
   //   try {
   //     let children = ["community"];
   //     let queryField = this.genericRepository.createQueryBuilder().select("entity").from(this.entityClassType, "entity");
-  //     queryField = queryField.innerJoinAndSelect("entity.community", "community").select(["community.Id"]);
+  //     queryField = queryField.leftJoinAndSelect("entity.community", "community").select(["community.Id"]);
   //     console.log("sql query for group is......" + queryField.getSql());
   //   }
   //   catch (err) {
@@ -364,7 +364,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
         // children.unshift("groupUser");
         // console.log("After unshift....children is....." + children);
         for (let i = 0; i < children.length-1; i++) {
-          queryField.innerJoinAndSelect(children[i] + "." + children[i+1], children[i+1])
+          queryField.leftJoinAndSelect(children[i] + "." + children[i+1], children[i+1])
           // console.log("query inside loop...."+queryField.getSql())
         }
       };
@@ -510,7 +510,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
   //   try {
   //     let children = ["community"];
   //     let queryField = this.genericRepository.createQueryBuilder().select("entity").from(this.entityClassType, "entity");
-  //     queryField = queryField.innerJoinAndSelect("entity.community", "community").select(["community.Id"]);
+  //     queryField = queryField.leftJoinAndSelect("entity.community", "community").select(["community.Id"]);
   //     console.log("sql query for user is......" + queryField.getSql());
   //   }
   //   catch (err) {
