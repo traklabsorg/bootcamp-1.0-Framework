@@ -338,6 +338,10 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
             myJSON['fieldName' + 0] = `%${requestModel.Filter.Conditions[0].FieldValue}%`;
             queryField = queryField.andWhere(requestModel.Filter.Conditions[0].FieldName + " LIKE :fieldName"+0, myJSON);
           }
+          else if(fieldValue == null){
+            myJSON['fieldName' + 0] = requestModel.Filter.Conditions[0].FieldValue;
+            queryField = queryField.andWhere(requestModel.Filter.Conditions[0].FieldName + " is NULL");
+          }
           else {
             myJSON['fieldName' + 0] = requestModel.Filter.Conditions[0].FieldValue;
             queryField = queryField.andWhere(requestModel.Filter.Conditions[0].FieldName + "=:fieldName"+0, myJSON);
@@ -348,6 +352,10 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
           if (typeof (fieldValue) == typeof ('')) {
             myJSON['fieldName' + 0] = `%${requestModel.Filter.Conditions[0].FieldValue}%`;
             queryField = queryField.andWhere(requestModel.Children[0] + "." + requestModel.Filter.Conditions[0].FieldName + " LIKE :fieldName"+0, myJSON);
+          }
+          else if(fieldValue == null){
+            myJSON['fieldName' + 0] = requestModel.Filter.Conditions[0].FieldValue;
+            queryField = queryField.andWhere(requestModel.Children[0] + "." + requestModel.Filter.Conditions[0].FieldName +  " is NULL");
           }
           else {
             myJSON['fieldName' + 0] = requestModel.Filter.Conditions[0].FieldValue;
@@ -375,6 +383,9 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
             if (typeof (fieldValue) == typeof ('')) {
               myJSON['fieldName' + i] = `%${requestModel.Filter.Conditions[i].FieldValue}%`;
               queryField = queryField.orWhere(str1 + " LIKE :fieldName"+i, myJSON);
+            }
+            else if(fieldValue==null){
+              queryField = queryField.orWhere(str1 + " is null ");
             }
             else {
               myJSON['fieldName' + i] = requestModel.Filter.Conditions[i].FieldValue;
