@@ -321,7 +321,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
   //   })
   //  }
 
-  private async assignConditionsToRequestModelQuery(requestModel:RequestModelQuery,queryField:SelectQueryBuilder<TEntity>):Promise<SelectQueryBuilder<TEntity>>{
+  public async assignConditionsToRequestModelQuery(requestModel:RequestModelQuery,queryField:SelectQueryBuilder<TEntity>):Promise<SelectQueryBuilder<TEntity>>{
     try{
     console.log("Length is...." + requestModel.Filter.Conditions.length + "\n\n\n\n\n\n\n");
       let i = 0;
@@ -517,7 +517,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
           queryField = queryField.leftJoinAndSelect(entityArray[0] + "." + entityArray[1], entityArray[1]);
         })
       }
-      requestModel.Children = [entityArrays[0][0]];
+      // requestModel.Children = [entityArrays[0][0]];
       queryField = await this.assignConditionsToRequestModelQuery(requestModel,queryField);
 
       if (orderBy == true)
@@ -578,7 +578,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
       await final_result.setDataCollection(result);
       console.log("Final_result is......" + JSON.stringify(final_result));
       
-      console.log("\n\n\n\n\nresult1 is....." + JSON.stringify(result));
+      // console.log("\n\n\n\n\nresult1 is....." + JSON.stringify(result));
       return final_result;
     }
     catch (err) {
