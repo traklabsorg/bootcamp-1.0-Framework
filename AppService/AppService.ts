@@ -70,7 +70,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
 //       'Content-Type': 'application/json',
 //       'Authorization': `Basic `+communityUrl,
 //   };
-//     console.log("Inside Tenant Id......uri is....." + GROUP_MICROSERVICE_URI + "/tenant/" + communityUrl);
+
 //     if (!cache.get(communityUrl))
 //     {
 //       return this.http.get(GROUP_MICROSERVICE_URI + "/tenant"+ "/" + communityUrl,{ headers: headersRequest })
