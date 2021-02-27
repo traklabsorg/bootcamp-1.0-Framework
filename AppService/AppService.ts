@@ -321,7 +321,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
   //   })
   //  }
 
-  private async assignConditionsToRequestModelQuery(requestModel:RequestModelQuery,queryField:SelectQueryBuilder<TEntity>):Promise<SelectQueryBuilder<TEntity>>{
+  public async assignConditionsToRequestModelQuery(requestModel:RequestModelQuery,queryField:SelectQueryBuilder<TEntity>):Promise<SelectQueryBuilder<TEntity>>{
     try{
     console.log("Length is...." + requestModel.Filter.Conditions.length + "\n\n\n\n\n\n\n");
       let i = 0;
@@ -517,7 +517,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
           queryField = queryField.leftJoinAndSelect(entityArray[0] + "." + entityArray[1], entityArray[1]);
         })
       }
-      requestModel.Children = [entityArrays[0][0]];
+      // requestModel.Children = [entityArrays[0][0]];
       queryField = await this.assignConditionsToRequestModelQuery(requestModel,queryField);
 
       if (orderBy == true)
@@ -578,7 +578,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
       await final_result.setDataCollection(result);
       console.log("Final_result is......" + JSON.stringify(final_result));
       
-      console.log("\n\n\n\n\nresult1 is....." + JSON.stringify(result));
+      // console.log("\n\n\n\n\nresult1 is....." + JSON.stringify(result));
       return final_result;
     }
     catch (err) {
@@ -604,7 +604,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
       let myJSON = {};
       let groupByField: string = requestModel.Filter.OrderByField;
       let baseEntity: string = requestModel.Children[0];
-      let result1: any = await (await this.createQueryByRequestModelQuery(requestModel)).select("COUNT("+baseEntity+".Id)", 'count_temp').addSelect(groupByField).groupBy(groupByField).execute();
+      let result1: any = await (await this.createQueryByRequestModelQuery(requestModel)).select("COUNT("+baseEntity+".Id)", 'count_temp').addSelect(groupByField).groupBy(groupByField).orderBy(groupByField).execute();
       // let result2: any = await this.genericRepository.query('SELECT "groupUser"."group_id" AS "groupUser_group_id", "groupUser"."id" AS "groupUser_id", COUNT("groupUser"."id") AS "count" FROM "groupUsers" "groupUser" INNER JOIN "users" "user" ON "user"."id"="groupUser"."user_id"  INNER JOIN "groups" "group" ON "group"."id"="groupUser"."group_id" WHERE "user"."user_email" LIKE \'%subahshlavi04@gmail.com%\' OR "user"."user_email" LIKE \'%subahshlavi03@gmail.com%\' GROUP BY "groupUser"."id"');
 
       console.log("\n\n\n\n\nResult1 is................" + JSON.stringify(result1));
