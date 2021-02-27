@@ -604,7 +604,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
       let myJSON = {};
       let groupByField: string = requestModel.Filter.OrderByField;
       let baseEntity: string = requestModel.Children[0];
-      let result1: any = await (await this.createQueryByRequestModelQuery(requestModel)).select("COUNT("+baseEntity+".Id)", 'count_temp').addSelect(groupByField).groupBy(groupByField).execute();
+      let result1: any = await (await this.createQueryByRequestModelQuery(requestModel)).select("COUNT("+baseEntity+".Id)", 'count_temp').addSelect(groupByField).groupBy(groupByField).orderBy(groupByField).execute();
       // let result2: any = await this.genericRepository.query('SELECT "groupUser"."group_id" AS "groupUser_group_id", "groupUser"."id" AS "groupUser_id", COUNT("groupUser"."id") AS "count" FROM "groupUsers" "groupUser" INNER JOIN "users" "user" ON "user"."id"="groupUser"."user_id"  INNER JOIN "groups" "group" ON "group"."id"="groupUser"."group_id" WHERE "user"."user_email" LIKE \'%subahshlavi04@gmail.com%\' OR "user"."user_email" LIKE \'%subahshlavi03@gmail.com%\' GROUP BY "groupUser"."id"');
 
       console.log("\n\n\n\n\nResult1 is................" + JSON.stringify(result1));
