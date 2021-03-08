@@ -251,7 +251,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
       var result2: any;
       var entities: TEntity[] = [];
       await Promise.all(dtos.DataCollection.map(async (dto_sample:any) => {
-        // console.log("Entity sample is......" + JSON.stringify(entity_sample));
+        console.log("Entity sample is......" + JSON.stringify(dto_sample));
         console.log("Map is......" + JSON.stringify(this.entityMap));
         // console.log("result....." + objectMapper(entity_sample, this.entityMap));
         await entities.push(objectMapper(dto_sample, this.entityMap));
@@ -372,10 +372,10 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
             
           else
             str1 = requestModel.Children[0] + "." + requestModel.Filter.Conditions[i].FieldName
-          console.log("hiiii.........");
+          // console.log("hiiii.........");
           console.log(requestModel.Filter.Conditions[i]);
-          console.log("All conditions are..........." + JSON.stringify(requestModel.Filter.Conditions));
-          console.log("\n\nrequestModel.Filter.Conditions[i-1].ConditionalSymbol is...." + requestModel.Filter.Conditions[i - 1].ConditionalSymbol);
+          // console.log("All conditions are..........." + JSON.stringify(requestModel.Filter.Conditions));
+          // console.log("\n\nrequestModel.Filter.Conditions[i-1].ConditionalSymbol is...." + requestModel.Filter.Conditions[i - 1].ConditionalSymbol);
           console.log("type is......" + typeof (requestModel.Filter.Conditions[i - 1].ConditionalSymbol));
           let fieldValue: any = requestModel.Filter.Conditions[i].FieldValue;
           if (requestModel.Filter.Conditions[i-1].ConditionalSymbol == ConditionalOperation.Or) {
@@ -494,11 +494,11 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
       // let orderBy = true;
       // let orderByField = 'Id';
       let isCaseInsensitiveSearch = false;
-      console.log(requestModel);
+      // console.log(requestModel);
       let orderBy = true;
       let orderByField = 'Id'
-      console.log(requestModel.Filter.IsOrderByFieldAsc)
-      console.log(typeof(requestModel.Filter.IsOrderByFieldAsc))
+      // console.log(requestModel.Filter.IsOrderByFieldAsc)
+      // console.log(typeof(requestModel.Filter.IsOrderByFieldAsc))
       if(typeof(requestModel.Filter.IsOrderByFieldAsc)!= 'undefined'){
         console.log("Undefined Condition Failed");
       orderBy = requestModel.Filter.IsOrderByFieldAsc
@@ -597,14 +597,20 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
 
   }
 
-  public async getCountByConditions(requestModel: RequestModelQuery): Promise<any>{
+  public async getCountByConditions(requestModel: RequestModelQuery,targetBaseEntity?:string): Promise<any>{
     try {
       let result = [];
       console.log("\n\n\n\n Inside getCountByConditions.....requestModel is......." + JSON.stringify(requestModel));
       let myJSON = {};
+      let baseEntity:string;
       let groupByField: string = requestModel.Filter.OrderByField;
-      let baseEntity: string = requestModel.Children[0];
-      let result1: any = await (await this.createQueryByRequestModelQuery(requestModel)).select("COUNT("+baseEntity+".Id)", 'count_temp').addSelect(groupByField).groupBy(groupByField).orderBy(groupByField).execute();
+      if(targetBaseEntity!= null){
+        baseEntity = targetBaseEntity;
+      }
+      else{
+        baseEntity = 'DISTINCT('+requestModel.Children[0] +".Id)";
+      }
+      let result1: any = await (await this.createQueryByRequestModelQuery(requestModel)).select("COUNT("+baseEntity+")", 'count_temp').addSelect(groupByField).groupBy(groupByField).orderBy(groupByField).execute();
       // let result2: any = await this.genericRepository.query('SELECT "groupUser"."group_id" AS "groupUser_group_id", "groupUser"."id" AS "groupUser_id", COUNT("groupUser"."id") AS "count" FROM "groupUsers" "groupUser" INNER JOIN "users" "user" ON "user"."id"="groupUser"."user_id"  INNER JOIN "groups" "group" ON "group"."id"="groupUser"."group_id" WHERE "user"."user_email" LIKE \'%subahshlavi04@gmail.com%\' OR "user"."user_email" LIKE \'%subahshlavi03@gmail.com%\' GROUP BY "groupUser"."id"');
 
       console.log("\n\n\n\n\nResult1 is................" + JSON.stringify(result1));
