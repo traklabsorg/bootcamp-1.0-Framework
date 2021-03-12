@@ -7,7 +7,7 @@ import { Page } from "../submodules/platform-3.0-Common/common/page";
 // import { RequestModelQuery } from "../submodules/platform-3.0-Common/common/RequestModel";
 import { ResponseModel } from "../submodules/platform-3.0-Common/common/ResponseModel";
 import { ServiceOperationResultType } from "../submodules/platform-3.0-Common/common/ServiceOperationResultType";
-import { createConnection, EntitySchema, getRepository, ObjectType, Repository, SelectQueryBuilder } from "typeorm";
+import { Brackets, createConnection, EntitySchema, getRepository, ObjectType, Repository, SelectQueryBuilder } from "typeorm";
 import { DtoBase } from "../submodules/platform-3.0-Common/common/DtoBase";
 
 import { RequestModelQuery } from "../submodules/platform-3.0-Common/common/RequestModelQuery";
@@ -311,6 +311,186 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
   }
 
 
+  public handleNormalCondition(sourceEntity:string,condition:Condition,queryField:SelectQueryBuilder<TEntity>,sequence:number) : SelectQueryBuilder<TEntity>{
+    console.log("Handling And Condition");
+    let myJSON = {};
+    if(typeof(condition.FieldValue) == typeof('')){
+      if(condition.FieldName.indexOf('.') > -1){
+        
+        myJSON['fieldName'+sequence] = `%${condition.FieldValue}%`;
+        queryField = queryField.where(condition.FieldName + "=:fieldName"+sequence, myJSON);
+      }
+      else{
+        let myJSON = {};
+        myJSON['fieldName'+sequence] = `%${condition.FieldValue}%`;
+        queryField = queryField.where(sourceEntity + "." + condition.FieldName + "=:fieldName"+sequence, myJSON);
+      }
+    }
+    else{
+      if(condition.FieldName.indexOf('.') > -1){
+        
+        myJSON['fieldName'+sequence] = condition.FieldValue;
+        queryField = queryField.where(condition.FieldName + "=:fieldName"+sequence, myJSON);
+      }
+      else{
+        myJSON['fieldName'+sequence] = condition.FieldValue;
+        queryField = queryField.where(sourceEntity + "." + condition.FieldName + "=:fieldName"+sequence, myJSON);
+      }
+    }
+
+    return queryField;
+  }
+
+
+  public handleOrCondition(sourceEntity:string,condition:Condition,queryField:SelectQueryBuilder<TEntity>,sequence:number) : SelectQueryBuilder<TEntity>{
+    console.log("Handling Or Condition");
+    let myJSON = {};
+    if(typeof(condition.FieldValue) == typeof('')){
+      if(condition.FieldName.indexOf('.') > -1){
+        
+        myJSON['fieldName'+sequence] = `%${condition.FieldValue}%`;
+        queryField = queryField.orWhere(condition.FieldName + "=:fieldName"+sequence, myJSON);
+      }
+      else{
+        let myJSON = {};
+        myJSON['fieldName'+sequence] = `%${condition.FieldValue}%`;
+        queryField = queryField.orWhere(sourceEntity + "." + condition.FieldName + "=:fieldName"+sequence, myJSON);
+      }
+    }
+    else{
+      if(condition.FieldName.indexOf('.') > -1){
+        
+        myJSON['fieldName'+sequence] = condition.FieldValue;
+        queryField = queryField.orWhere(condition.FieldName + "=:fieldName"+sequence, myJSON);
+      }
+      else{
+        myJSON['fieldName'+sequence] = condition.FieldValue;
+        queryField = queryField.orWhere(sourceEntity + "." + condition.FieldName + "=:fieldName"+sequence, myJSON);
+      }
+    }
+    console.log("\n\n\n\n\n\n\nModified Query is....",queryField.getQuery(),"\n\n\n\n\n\n\n\n\n");
+    return queryField;
+  }
+
+  public handleAndCondition(sourceEntity:string,condition:Condition,queryField:SelectQueryBuilder<TEntity>,sequence:number) : SelectQueryBuilder<TEntity>{
+    console.log("Handling And Condition");
+    let myJSON = {};
+    if(typeof(condition.FieldValue) == typeof('')){
+      if(condition.FieldName.indexOf('.') > -1){
+        
+        myJSON['fieldName'+sequence] = `%${condition.FieldValue}%`;
+        queryField = queryField.andWhere(condition.FieldName + "=:fieldName"+sequence, myJSON);
+      }
+      else{
+        let myJSON = {};
+        myJSON['fieldName'+sequence] = `%${condition.FieldValue}%`;
+        queryField = queryField.andWhere(sourceEntity + "." + condition.FieldName + "=:fieldName"+sequence, myJSON);
+      }
+    }
+    else{
+      if(condition.FieldName.indexOf('.') > -1){
+        
+        myJSON['fieldName'+sequence] = condition.FieldValue;
+        queryField = queryField.andWhere(condition.FieldName + "=:fieldName"+sequence, myJSON);
+      }
+      else{
+        myJSON['fieldName'+sequence] = condition.FieldValue;
+        queryField = queryField.andWhere(sourceEntity + "." + condition.FieldName + "=:fieldName"+sequence, myJSON);
+      }
+    }
+
+    return queryField;
+  }
+
+
+  public async assignConditionsToRequestModelQueryV2(requestModel:RequestModelQuery,queryField:SelectQueryBuilder<TEntity>):Promise<SelectQueryBuilder<TEntity>>{
+    try{
+
+      console.log("\n\n\n\nInside assignConditionsToRequestModelQueryV2.........................\n\n\n\n")
+    let totalConditionalArray = [];   // +1 for "Or" condition and -1 for "And" condition
+    // let totalConditionArrayLength = 1;
+    for(let i=0;i<requestModel.Filter.Conditions.length;i++){
+      console.log(totalConditionalArray)
+      if(i==0){
+        if(requestModel.Filter.Conditions[0].ConditionalSymbol == ConditionalOperation.And){
+          totalConditionalArray.push(-1)
+        }
+        else{
+          totalConditionalArray.push(1)
+        }
+        continue;
+      }
+      let lastArrayElement = totalConditionalArray[totalConditionalArray.length-1]
+      if(requestModel.Filter.Conditions[i].ConditionalSymbol == ConditionalOperation.And){
+        if(lastArrayElement>0){
+          totalConditionalArray.push(-1);
+          // totalConditionArrayLength += 1;
+        }
+        else{
+          totalConditionalArray[totalConditionalArray.length-1] = lastArrayElement - 1 
+        }
+      }
+      else{
+        if(lastArrayElement>0){
+          totalConditionalArray[totalConditionalArray.length-1] = lastArrayElement + 1
+        }
+        else{
+          totalConditionalArray.push(1);
+          // totalConditionArrayLength += 1;
+           
+        }
+      }
+    }
+
+    // if(totalConditionalArray[0]>0){
+    //   queryField = this.handleNormalCondition(requestModel.Children[0],requestModel.Filter.Conditions[0],queryField,0);
+    //   totalConditionalArray[0] = totalConditionalArray[0] - 1;
+    // }
+    // else{
+    //   queryField = this.handleNormalCondition(requestModel.Children[0],requestModel.Filter.Conditions[0],queryField,0);
+    //   totalConditionalArray[0] = totalConditionalArray[0] + 1;
+    // }
+
+    let i = 0;
+    console.log("\n\n\n\n\n TotalConditionalArray.......",totalConditionalArray)
+
+    for(let k = 0;k< totalConditionalArray.length;k++){
+      let value = totalConditionalArray[k];
+      // if(value>0){
+      //   value += 1
+      // }
+      // console.log("Value is.......",value)
+      if(value<0){
+        for(let j = 0;j<(value*(-1));j++){
+          queryField =  this.handleAndCondition(requestModel.Children[0],requestModel.Filter.Conditions[i],queryField,i);
+          i += 1;
+        }
+      }
+      else{
+        if(value == 1){
+          queryField =  this.handleOrCondition(requestModel.Children[0],requestModel.Filter.Conditions[i],queryField,i);
+          i += 1
+        }
+        else{
+          queryField = queryField.andWhere(new Brackets((qb:SelectQueryBuilder<TEntity>) =>{
+            for(let j = 0;j<value;j++){
+            qb = this.handleOrCondition(requestModel.Children[0],requestModel.Filter.Conditions[i],qb,i)
+            i += 1;
+            }
+          }))
+        
+      }
+    }
+    }
+    return queryField;
+  }
+
+  catch (err) {
+    console.log("Error thrown from assignConditionsToRequestModelQueryV2....... Error is....."+JSON.stringify(err));
+    throw err;
+  }
+  }
+
 
   // async updateById(entities: TEntity[]): Promise<TEntity[]> {
   //   this.genericRepository.createQueryBuilder("Entity").
@@ -360,6 +540,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
           else {
             myJSON['fieldName' + 0] = requestModel.Filter.Conditions[0].FieldValue;
             queryField = queryField.andWhere(requestModel.Children[0] + "." + requestModel.Filter.Conditions[0].FieldName + "=:fieldName"+0, myJSON);
+            
           }
           // console.log("Myjson init 2 ......." + requestModel.Children[0] + "." + requestModel.Filter.Conditions[0].FieldName + "=:fieldName"+0, myJSON);
           // queryField = queryField.andWhere(requestModel.Children[0] + "." + requestModel.Filter.Conditions[0].FieldName + "=:fieldName"+0, myJSON);
@@ -382,14 +563,14 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
             let myJSON = {};
             if (typeof (fieldValue) == typeof ('')) {
               myJSON['fieldName' + i] = `%${requestModel.Filter.Conditions[i].FieldValue}%`;
-              queryField = queryField.orWhere(str1 + " LIKE :fieldName"+i, myJSON);
+              queryField = queryField.andWhere(str1 + " LIKE :fieldName"+i, myJSON);
             }
             else if(fieldValue==null){
-              queryField = queryField.orWhere(str1 + " is null ");
+              queryField = queryField.andWhere(str1 + " is null ");
             }
             else {
               myJSON['fieldName' + i] = requestModel.Filter.Conditions[i].FieldValue;
-              queryField = queryField.orWhere(str1 + "=:fieldName"+i, myJSON);
+              queryField = queryField.andWhere(str1 + "=:fieldName"+i, myJSON);
             }
             // `%${ requestModel.Filter.Conditions[i].FieldValue }%`
             // myJSON['fieldName'+i] = `%${ requestModel.Filter.Conditions[i].FieldValue }%`;
@@ -553,6 +734,9 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
 
   public async search(requestModel: RequestModelQuery,isCustomApi?:boolean,entityArray?:Array<Array<string>>): Promise<ResponseModel<TDto>> {
     try {
+
+
+      console.log("Inside Search..........")
       let queryField:any = null;
       if(isCustomApi!= null && isCustomApi == true){
         queryField = await this.createQueryByCustomApiRequirement(requestModel,entityArray);
@@ -576,7 +760,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
       let final_result: ResponseModel<TDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null)
       console.log("Setting result......")
       await final_result.setDataCollection(result);
-      console.log("Final_result is......" + JSON.stringify(final_result));
+      // console.log("Final_result is......" + JSON.stringify(final_result));
       
       // console.log("\n\n\n\n\nresult1 is....." + JSON.stringify(result));
       return final_result;
