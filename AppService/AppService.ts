@@ -406,41 +406,57 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
   public async assignConditionsToRequestModelQueryV2(requestModel:RequestModelQuery,queryField:SelectQueryBuilder<TEntity>):Promise<SelectQueryBuilder<TEntity>>{
     try{
 
-      console.log("\n\n\n\nInside assignConditionsToRequestModelQueryV2.........................\n\n\n\n")
+      console.log("\n\n\n\nInside assignConditionsToRequestModelQueryV3.........................\n\n\n\n")
     let totalConditionalArray = [];   // +1 for "Or" condition and -1 for "And" condition
+    let count = 0
     // let totalConditionArrayLength = 1;
     for(let i=0;i<requestModel.Filter.Conditions.length;i++){
       console.log(totalConditionalArray)
-      if(i==0){
-        if(requestModel.Filter.Conditions[0].ConditionalSymbol == ConditionalOperation.And){
-          totalConditionalArray.push(-1)
+      if(requestModel.Filter.Conditions[i].ConditionalSymbol != ConditionalOperation.Or){
+        if(count!= 0){
+          totalConditionalArray.push(count+1);
+          count = 0
         }
         else{
-          totalConditionalArray.push(1)
-        }
-        continue;
-      }
-      let lastArrayElement = totalConditionalArray[totalConditionalArray.length-1]
-      if(requestModel.Filter.Conditions[i].ConditionalSymbol == ConditionalOperation.And){
-        if(lastArrayElement>0){
-          totalConditionalArray.push(-1);
-          // totalConditionArrayLength += 1;
-        }
-        else{
-          totalConditionalArray[totalConditionalArray.length-1] = lastArrayElement - 1 
+          totalConditionalArray.push(0)
         }
       }
       else{
-        if(lastArrayElement>0){
-          totalConditionalArray[totalConditionalArray.length-1] = lastArrayElement + 1
+        count = count + 1 ;
+        totalConditionalArray.push(count);
+      }
+    }
+    console.log(totalConditionalArray)
+    let finalConditionalArray = [];
+    count = -1;
+    for(let i = 0;i<totalConditionalArray.length-1;i++){
+      if(totalConditionalArray[i]== 0){
+        if(totalConditionalArray[i+1]!= 0){
+          finalConditionalArray.push(count);
+          count = -1;
         }
         else{
-          totalConditionalArray.push(1);
-          // totalConditionArrayLength += 1;
-           
+          count = count - 1;
+        }
+      }
+      else{
+        if(totalConditionalArray[i+1]!= 0){
+          count = -1;
+        }
+        else{
+          finalConditionalArray.push(totalConditionalArray[i])
+          count = -1;
         }
       }
     }
+
+    if(totalConditionalArray[totalConditionalArray.length -1]!= 0){
+      finalConditionalArray.push(totalConditionalArray[totalConditionalArray.length -1])
+    }
+    else{
+      finalConditionalArray.push(count-1);
+    }
+    console.log(finalConditionalArray)
 
     // if(totalConditionalArray[0]>0){
     //   queryField = this.handleNormalCondition(requestModel.Children[0],requestModel.Filter.Conditions[0],queryField,0);
@@ -452,10 +468,10 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
     // }
 
     let i = 0;
-    console.log("\n\n\n\n\n TotalConditionalArray.......",totalConditionalArray)
+    // console.log("\n\n\n\n\n TotalConditionalArray.......",totalConditionalArray)
 
-    for(let k = 0;k< totalConditionalArray.length;k++){
-      let value = totalConditionalArray[k];
+    for(let k = 0;k< finalConditionalArray.length;k++){
+      let value = finalConditionalArray[k];
       // if(value>0){
       //   value += 1
       // }
@@ -490,6 +506,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
     throw err;
   }
   }
+
 
 
   // async updateById(entities: TEntity[]): Promise<TEntity[]> {
@@ -650,7 +667,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
         // return queryField.select(['groupUser.groupId', "COUNT(\"groupUser\".\"id\")"])
       // }
 
-      queryField = await this.assignConditionsToRequestModelQuery(requestModel,queryField);
+      queryField = await this.assignConditionsToRequestModelQueryV2(requestModel,queryField);
 
       if (orderBy == true)
         return queryField.orderBy(requestModel.Children[0] + "." + orderByField, 'ASC');
@@ -699,7 +716,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
         })
       }
       // requestModel.Children = [entityArrays[0][0]];
-      queryField = await this.assignConditionsToRequestModelQuery(requestModel,queryField);
+      queryField = await this.assignConditionsToRequestModelQueryV2(requestModel,queryField);
 
       if (orderBy == true)
         return queryField.orderBy(requestModel.Children[0] + "." + orderByField, 'ASC');
