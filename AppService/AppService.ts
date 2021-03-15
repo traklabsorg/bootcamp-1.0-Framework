@@ -455,13 +455,15 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
     }
     console.log("After 1 st change.....finalConditionalArray.....",finalConditionalArray)
 
-    if(totalConditionalArray.length == 1 && totalConditionalArray[0] == 0){
-    finalConditionalArray = [-1]}
-    else if(totalConditionalArray[totalConditionalArray.length -1]!= 0){
+    if(totalConditionalArray[totalConditionalArray.length -1]!= 0){
       finalConditionalArray.push(totalConditionalArray[totalConditionalArray.length -1])
     }
     else{
       finalConditionalArray.push(count-1);
+    }
+
+    if(finalConditionalArray.length == 1 && finalConditionalArray[0] < 0){
+      finalConditionalArray[0] = finalConditionalArray[0] + 1
     }
     console.log("finalConditionalArray.......",finalConditionalArray);
 
