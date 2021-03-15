@@ -318,12 +318,12 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
       if(condition.FieldName.indexOf('.') > -1){
         
         myJSON['fieldName'+sequence] = `%${condition.FieldValue}%`;
-        queryField = queryField.where(condition.FieldName + "=:fieldName"+sequence, myJSON);
+        queryField = queryField.where(condition.FieldName + " LIKE :fieldName"+sequence, myJSON);
       }
       else{
         let myJSON = {};
         myJSON['fieldName'+sequence] = `%${condition.FieldValue}%`;
-        queryField = queryField.where(sourceEntity + "." + condition.FieldName + "=:fieldName"+sequence, myJSON);
+        queryField = queryField.where(sourceEntity + "." + condition.FieldName + " LIKE :fieldName"+sequence, myJSON);
       }
     }
     else{
@@ -349,12 +349,12 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
       if(condition.FieldName.indexOf('.') > -1){
         
         myJSON['fieldName'+sequence] = `%${condition.FieldValue}%`;
-        queryField = queryField.orWhere(condition.FieldName + "=:fieldName"+sequence, myJSON);
+        queryField = queryField.orWhere(condition.FieldName + " LIKE :fieldName"+sequence, myJSON);
       }
       else{
         let myJSON = {};
         myJSON['fieldName'+sequence] = `%${condition.FieldValue}%`;
-        queryField = queryField.orWhere(sourceEntity + "." + condition.FieldName + "=:fieldName"+sequence, myJSON);
+        queryField = queryField.orWhere(sourceEntity + "." + condition.FieldName + " LIKE :fieldName"+sequence, myJSON);
       }
     }
     else{
@@ -375,16 +375,20 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
   public handleAndCondition(sourceEntity:string,condition:Condition,queryField:SelectQueryBuilder<TEntity>,sequence:number) : SelectQueryBuilder<TEntity>{
     console.log("Handling And Condition");
     let myJSON = {};
+    console.log(typeof(condition.FieldValue))
     if(typeof(condition.FieldValue) == typeof('')){
+      console.log("Entered String Cond.....\n\n\n\n")
       if(condition.FieldName.indexOf('.') > -1){
         
         myJSON['fieldName'+sequence] = `%${condition.FieldValue}%`;
-        queryField = queryField.andWhere(condition.FieldName + "=:fieldName"+sequence, myJSON);
+        console.log("1......",myJSON)
+        queryField = queryField.andWhere(condition.FieldName + " LIKE :fieldName"+sequence, myJSON);
       }
       else{
         let myJSON = {};
         myJSON['fieldName'+sequence] = `%${condition.FieldValue}%`;
-        queryField = queryField.andWhere(sourceEntity + "." + condition.FieldName + "=:fieldName"+sequence, myJSON);
+        console.log("2......",myJSON)
+        queryField = queryField.andWhere(sourceEntity + "." + condition.FieldName + " LIKE :fieldName"+sequence, myJSON);
       }
     }
     else{
@@ -426,7 +430,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
         totalConditionalArray.push(count);
       }
     }
-    console.log(totalConditionalArray)
+    console.log("totalConditionalArray......",totalConditionalArray)
     let finalConditionalArray = [];
     count = -1;
     for(let i = 0;i<totalConditionalArray.length-1;i++){
@@ -449,14 +453,18 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
         }
       }
     }
+    console.log("After 1 st change.....finalConditionalArray.....",finalConditionalArray)
 
-    if(totalConditionalArray[totalConditionalArray.length -1]!= 0){
+    if(totalConditionalArray.length == 1 && totalConditionalArray[0] == 0){
+    finalConditionalArray = [-1]}
+    else if(totalConditionalArray[totalConditionalArray.length -1]!= 0){
       finalConditionalArray.push(totalConditionalArray[totalConditionalArray.length -1])
     }
     else{
       finalConditionalArray.push(count-1);
     }
-    console.log(finalConditionalArray)
+    console.log("finalConditionalArray.......",finalConditionalArray);
+
 
     // if(totalConditionalArray[0]>0){
     //   queryField = this.handleNormalCondition(requestModel.Children[0],requestModel.Filter.Conditions[0],queryField,0);
