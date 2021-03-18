@@ -368,7 +368,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
         queryField = queryField.orWhere(sourceEntity + "." + condition.FieldName + "=:fieldName"+sequence, myJSON);
       }
     }
-    console.log("\n\n\n\n\n\n\nModified Query is....",queryField.getQuery(),"\n\n\n\n\n\n\n\n\n");
+    // console.log("\n\n\n\n\n\n\nModified Query is....",queryField.getQuery(),"\n\n\n\n\n\n\n\n\n");
     return queryField;
   }
 
@@ -411,12 +411,45 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
     try{
 
       console.log("\n\n\n\nInside assignConditionsToRequestModelQueryV3.........................\n\n\n\n")
+
+      //modified
+      // let finalConditionalArray = [];
+      // for(let i = 0;i<requestModel.Filter.Conditions.length - 1;i++){
+      //   if(requestModel.Filter.Conditions[i].ConditionalSymbol == ConditionalOperation.Or){
+      //     if(finalConditionalArray.length == 0){
+      //       finalConditionalArray.push(1)
+      //     }
+      //     else if(finalConditionalArray[finalConditionalArray.length-1] > 0){
+      //       finalConditionalArray[finalConditionalArray.length-1] += 1
+      //     }
+      //     else{
+      //       finalConditionalArray.push(1)
+      //     }
+      //   }
+      //   else{
+      //     if(finalConditionalArray.length == 0){
+      //       finalConditionalArray.push(-1)
+      //     }
+      //     else if(finalConditionalArray[finalConditionalArray.length-1] < 0){
+      //       finalConditionalArray[finalConditionalArray.length-1] = finalConditionalArray[finalConditionalArray.length-1] - 1
+      //     }
+      //     else{
+      //       finalConditionalArray.push(-1)
+      //     }
+      //   }
+      // }
+      // if(requestModel.Filter.Conditions.length == 1){
+      //   finalConditionalArray = [-1]
+      // }
+      // console.log(finalConditionalArray)
+      //modified
+
     let totalConditionalArray = [];   // +1 for "Or" condition and -1 for "And" condition
     let count = 0
     // let totalConditionArrayLength = 1;
     for(let i=0;i<requestModel.Filter.Conditions.length;i++){
       console.log(totalConditionalArray)
-      if(requestModel.Filter.Conditions[i].ConditionalSymbol != ConditionalOperation.Or){
+      if(requestModel.Filter.Conditions[i].ConditionalSymbol != ConditionalOperation.Or){    //    And / Null Condition
         if(count!= 0){
           totalConditionalArray.push(count+1);
           count = 0
@@ -427,42 +460,58 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
       }
       else{
         count = count + 1 ;
-        totalConditionalArray.push(count);
+        totalConditionalArray.push(count);        // totalConditionalArray Contains 0 for And & Incremental value for Or
       }
     }
     console.log("totalConditionalArray......",totalConditionalArray)
     let finalConditionalArray = [];
-    count = -1;
-    for(let i = 0;i<totalConditionalArray.length-1;i++){
-      if(totalConditionalArray[i]== 0){
-        if(totalConditionalArray[i+1]!= 0){
-          finalConditionalArray.push(count);
-          count = -1;
-        }
-        else{
-          count = count - 1;
-        }
+    // count = -1;
+    // for(let i = 0;i<totalConditionalArray.length-1;i++){
+    //   if(totalConditionalArray[i]== 0){
+    //     if(totalConditionalArray[i+1]!= 0){
+    //       finalConditionalArray.push(count);
+    //       count = -1;
+    //     }
+    //     else{
+    //       count = count - 1;
+    //     }
+    //   }
+    //   else{
+    //     if(totalConditionalArray[i+1]!= 0){
+    //       count = -1;
+    //     }
+    //     else{
+    //       finalConditionalArray.push(totalConditionalArray[i])
+    //       count = -1;
+    //     }
+    //   }
+    // }
+    //modified
+    let flag = 0
+    for(let i = totalConditionalArray.length-1;i>-1;i = i -1){
+      console.log("flag....",flag)
+      if(totalConditionalArray[i] == 0){
+        finalConditionalArray.unshift(-1)
+        flag = 0
       }
       else{
-        if(totalConditionalArray[i+1]!= 0){
-          count = -1;
+        if(flag == 0){
+          finalConditionalArray.unshift(totalConditionalArray[i])
+          flag = 1
         }
-        else{
-          finalConditionalArray.push(totalConditionalArray[i])
-          count = -1;
-        }
+        
       }
     }
     console.log("After 1 st change.....finalConditionalArray.....",finalConditionalArray)
 
     if(totalConditionalArray.length == 1 && totalConditionalArray[0] == 0){
     finalConditionalArray = [-1]}
-    else if(totalConditionalArray[totalConditionalArray.length -1]!= 0){
-      finalConditionalArray.push(totalConditionalArray[totalConditionalArray.length -1])
-    }
-    else{
-      finalConditionalArray.push(count-1);
-    }
+    // else if(totalConditionalArray[totalConditionalArray.length -1]!= 0){
+    //   finalConditionalArray.push(totalConditionalArray[totalConditionalArray.length -1])
+    // }
+    // else{
+    //   finalConditionalArray.push(count-1);
+    // }
     console.log("finalConditionalArray.......",finalConditionalArray);
 
 
@@ -491,19 +540,12 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
         }
       }
       else{
-        if(value == 1){
-          queryField =  this.handleOrCondition(requestModel.Children[0],requestModel.Filter.Conditions[i],queryField,i);
-          i += 1
-        }
-        else{
-          queryField = queryField.andWhere(new Brackets((qb:SelectQueryBuilder<TEntity>) =>{
-            for(let j = 0;j<value;j++){
-            qb = this.handleOrCondition(requestModel.Children[0],requestModel.Filter.Conditions[i],qb,i)
-            i += 1;
-            }
-          }))
-        
-      }
+        queryField = queryField.andWhere(new Brackets((qb:SelectQueryBuilder<TEntity>) =>{
+          for(let j = 0;j<value;j++){
+          qb = this.handleOrCondition(requestModel.Children[0],requestModel.Filter.Conditions[i],qb,i)
+          i += 1;
+          }
+        }))
     }
     }
     return queryField;
