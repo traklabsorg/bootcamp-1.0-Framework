@@ -197,11 +197,15 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
         console.log("Map is......" + JSON.stringify(this.entityMap));
         // console.log("result....." + objectMapper(entity_sample, this.entityMap));
       
-        result1 = await this.genericRepository.save(objectMapper(entity_sample, this.entityMap))
+        // result1 = await this.genericRepository.save(objectMapper(entity_sample, this.entityMap))
+        result1 = await this.genericRepository.createQueryBuilder().insert()
+        .values(objectMapper(entity_sample, this.entityMap))
+        .returning('*')
+        .execute()
         console.log("result is......." + JSON.stringify(result1));
         // result1 = await this.genericRepository.save(entity_sample)
       
-        await result.push(result1)
+        await result.push(result1.generatedMaps[0])
         await console.log("present result is......" + JSON.stringify(result));
       })
       );
