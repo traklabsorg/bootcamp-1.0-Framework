@@ -19,6 +19,8 @@ import { map } from 'rxjs/operators';
 import { ConditionalOperation } from "../submodules/platform-3.0-Common/common/conditionOperation";
 import { EntityBase } from "../EntityBase/EntityBase";
 import { Condition } from "../submodules/platform-3.0-Common/common/condition";
+import { Label, NotificationData, NotificationDto, NotificationType } from "submodules/platform-3.0-Dtos/notificationDto";
+import { SNS_SQS } from "submodules/platform-3.0-AWS/SNS_SQS";
 // const config = require("../../../config")
 const objectMapper = require('object-mapper');
 var pluralize = require('pluralize')
@@ -40,7 +42,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
 
   private dtoToEntitymap = {};
   private dict = {};
-  public sns_sqs: any;
+  public sns_sqs =  SNS_SQS.getInstance();
 
   // private group_add_publish_topics = [];
   // private group_add_subscribe_topics = [];
@@ -1105,6 +1107,19 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
 
 
 
+}
+
+
+async createNotification(userId?:number,label?:Label,notificationType?:NotificationType,creationDate ?: any,notificationData?:NotificationData):Promise<any>{
+  let notification:NotificationDto = new NotificationDto();
+  let notificationResult : RequestModel<NotificationDto> = new RequestModel();
+  notification.userId = userId,notification.label = label,notification.notificationType = NotificationType.email
+  notification.CreationDate = creationDate,notification.notificationData = notificationData;
+  notificationResult.DataCollection.push(notification)
+  console.log("pushing notification to aws.....",notificationResult);
+  this.sns_sqs.publishMessageToTopic("NOTIFICATION_ADD",notificationResult);
+
+  return null;
 }
 
 
