@@ -747,6 +747,8 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
       // let orderByField = 'Id';
       let isCaseInsensitiveSearch = false;
       // console.log(requestModel);
+      console.log("entity array is ..................",entityArrays);
+
       let orderBy = true;
       let orderByField = 'Id'
       // console.log(requestModel.Filter.IsOrderByFieldAsc)
@@ -760,18 +762,20 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
       // let orderBy = requestModel.Filter.IsOrderByFieldAsc==undefined?true:requestModel.Filter.IsOrderByFieldAsc;
       // let orderByField = requestModel.Filter.OrderByField == undefined ? 'Id' : requestModel.Filter.OrderByField;
       
-      console.log(orderByField)
+      console.log("OrderByField is.......",orderByField)
 
       let queryField = this.genericRepository.createQueryBuilder(entityArrays[0][0]);
-
+      // console.log("QueryField is.......",queryField.getQuery())
       if (entityArrays!= null) {
         entityArrays.forEach((entityArray:Array<string>)=>{
+          console.log(entityArray);
           queryField = queryField.leftJoinAndSelect(entityArray[0] + "." + entityArray[1], entityArray[1]);
         })
       }
+      // console.log("OrderByField is.......",orderByField)
       // requestModel.Children = [entityArrays[0][0]];
       queryField = await this.assignConditionsToRequestModelQueryV2(requestModel,queryField);
-
+      console.log("OrderByField is.......",orderByField)
       if (orderBy == true)
         return queryField.orderBy(requestModel.Children[0] + "." + orderByField, 'ASC');
       else
@@ -928,38 +932,39 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
   //   return null;
   // }
 
-  public async getRequestModel(children: string[], id: number): Promise<any>{
-    let cache_id: string = children[0] + id;
-    if (!cache.get(cache_id))
-    {
-      let result: [] = await this.getParentId(children, id);
-      if(result.length != 0)
-      cache.set(cache_id, result);
-      return result;
-    }
-    else{
-      // console.log("dict is......" + this.dict);
-      return cache.get(cache_id);
-    }
-  }
-
-  public async getParentId(children: string[],id:number): Promise<any>{
+  // public async getRequestModel(children: string[], id: number): Promise<any>{
+  //   let cache_id: string = children[0] + id;
+  //   if (!cache.get(cache_id))
+  //   {
+  //     let result: [] = await this.getParentId(children, id);
+  //     if(result.length != 0)
+  //     cache.set(cache_id, result);
+  //     return result;
+  //   }
+  //   else{
+  //     // console.log("dict is......" + this.dict);
+  //     return cache.get(cache_id);
+  //   }
+  // }
+  //children(child,parent), id(id of child whose parent is needed)
+  public async getParentId(children: string[],id:number): Promise<ResponseModel<TDto>>{
     try {
 
       console.log("Children is....." + children);
       // let queryField = this.genericRepository.createQueryBuilder().select("entity").from(this.entityClassType, "entity");
       let queryField = this.genericRepository.createQueryBuilder(children[0]);
-      let result3 = queryField.getMany();
+      // let result3 = queryField.getMany();
      // console.log("Result is....." + JSON.stringify(result3));
       let length_of_array = children.length;
       if (length_of_array != 0) {
         // children.unshift("groupUser");
         // console.log("After unshift....children is....." + children);
         for (let i = 0; i < children.length-1; i++) {
-          queryField.leftJoinAndSelect(children[i] + "." + children[i+1], children[i+1])
+          queryField = queryField.leftJoinAndSelect(children[i] + "." + children[i+1], children[i+1])
           // console.log("query inside loop...."+queryField.getSql())
         }
       };
+      // console.log(queryField)
       
 
      // let result1: any = await queryField.getMany();
@@ -971,13 +976,13 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
 
       //queryField = queryField.where("group_user.id=1");
       // queryField.where(children[0] + ".id=:Id", myJSON);
-      queryField.where(children[0]+".id=:Id",myJSON);
+      queryField = queryField.where(children[0]+".id=:Id",myJSON);
       // queryField.addSelect("user.community_id");
-      queryField.addSelect(children[length_of_array - 1] + ".id");
+      queryField = queryField.addSelect(children[length_of_array - 1] + ".id");
       // console.log("sql query for GenericEntity  2 is......" + queryField.getSql());
       // let result:any = await queryField.select(["user.community_id"]).where("groupUser.id=:Id", myJSON).distinct().getMany();
       //let result: any = await queryField.select["user.community_id"].where("group_user.id=:Id", myJSON).distinct().getMany();
-      let result: any = await queryField.getMany(); //  await queryField.select["\"user\".community_id"];
+      let result: TEntity[] = await queryField.getMany(); //  await queryField.select["\"user\".community_id"];
       // console.log("\n\n\n\nbabayyyy......." + result["communityId"])
       // console.log(typeof (result));
       // console.log("Result is....12345.........." + JSON.stringify(result[0].user.community.Id));
@@ -986,7 +991,13 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
 
       // console.log("Current resultr is......."+JSON.stringify(result.user.communityId));
       // await console.log("Result123 is...." +JSON.stringify(JSON.parse(result)));
-      return result;
+      let finalResult: ResponseModel<TDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null)
+      let dataCollection : TDto[] = [];
+      result.map((entity:TEntity)=>{
+          dataCollection.push(plainToClass(this.dtoClassType,objectMapper(entity,this.entityToDtoMap)))
+      })
+      finalResult.setDataCollection(dataCollection);
+      return finalResult;
       
     }
     catch (err) {
