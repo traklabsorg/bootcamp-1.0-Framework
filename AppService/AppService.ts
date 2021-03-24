@@ -127,7 +127,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
       let entity: TEntity;
       
       Promise.all(dtos.map(async (dto: TDto) => {
-                await result.push(plainToClass(this.entityClassType,objectMapper(dto,this.entityToDtoMap)))
+                await result.push(plainToClass(this.entityClassType,objectMapper(dto,this.dtoToEntitymap)))
       }))
 
 
@@ -194,14 +194,14 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
      
       // let final_result: ResponseModel<TDto> = new ResponseModel(entity.RequestGuid,entity.SocketId, null, null, "123", "123", "gft", null);
       
-      await Promise.all(entity.DataCollection.map(async (entity_sample) => {
+      await Promise.all(entity.DataCollection.map(async (dto_sample) => {
         // console.log("Entity sample is......" + JSON.stringify(entity_sample));
         console.log("Map is......" + JSON.stringify(this.entityMap));
         // console.log("result....." + objectMapper(entity_sample, this.entityMap));
       
         // result1 = await this.genericRepository.save(objectMapper(entity_sample, this.entityMap))
         result1 = await this.genericRepository.createQueryBuilder().insert()
-        .values(objectMapper(entity_sample, this.entityMap))
+        .values(objectMapper(dto_sample, this.entityMap))
         .returning('*')
         .execute()
         console.log("result is......." + JSON.stringify(result1));
