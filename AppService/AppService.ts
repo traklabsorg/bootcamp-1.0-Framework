@@ -1110,8 +1110,9 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
 }
 
 
-async createNotification(userId?:number,userEmail?:string,label?:Label,notificationType?:NotificationType,creationDate ?: any,notificationData?:NotificationData):Promise<any>{
-  let notification:NotificationDto = new NotificationDto();
+async createNotification(userId?:number,userEmail?:string,label?:Label,notificationType?:NotificationType,creationDate?: any,notificationData?:NotificationData):Promise<any>{
+  console.log("inside create notification...")
+  let notification: NotificationDto = new NotificationDto();
   let notificationResult : RequestModel<NotificationDto> = new RequestModel();
   notification.userId = userId,notification.label = label,notification.notificationType = NotificationType.email
   notification.CreationDate = creationDate,notification.notificationData = notificationData;
