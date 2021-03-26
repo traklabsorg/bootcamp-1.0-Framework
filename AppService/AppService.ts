@@ -121,6 +121,8 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
     }
   }
 
+  
+
   async mapToEntity(dtos: TDto[]): Promise<TEntity[]>{
     try {
       let result: TEntity[] = [];
@@ -137,7 +139,8 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-
+  
+  //Not yet in use
   async getByIds(id: any[]): Promise<ResponseModel<TDto>>{
     try {
       let final_result: ResponseModel<TDto> = new ResponseModel("123", null, null, "123", "123", "gft", null,null,null);
@@ -152,12 +155,11 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
     }
     
   }
-
+ 
+  //Not yet in use(not sure)
   async getAll(): Promise<ResponseModel<TDto>> {
     try {
       let result = await this.genericRepository.find();
-
-      
       let final_result: ResponseModel<TDto> = new ResponseModel("123", null, null, "123", "123", "gft", null,null,null);
       console.log("result is....." + JSON.stringify(result));
       final_result.setDataCollection(await this.mapToDto(result));
@@ -170,6 +172,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
     }
   }
 
+  //creates new entry in database of given entity  
   async create(entity: RequestModel<TDto>): Promise<ResponseModel<TDto>> {
     try {
       await console.log("Inside insert of generic repository...entity is...." + JSON.stringify(entity));
@@ -229,7 +232,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
     };
     
   }
-
+  
   async deleteById(ids: any[]): Promise<ResponseModel<TDto>> {
     const entities = await this.getByIds(ids);
     console.log("Entites to be deleted are......" + JSON.stringify(entities));
@@ -382,30 +385,30 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
     console.log("Handling And Condition");
     let myJSON = {};
     console.log(typeof(condition.FieldValue))
-    if(typeof(condition.FieldValue) == typeof('')){
+    if(typeof(condition.FieldValue) == typeof('')){ //if fieldValue is a string
       console.log("Entered String Cond.....\n\n\n\n")
-      if(condition.FieldName.indexOf('.') > -1){
+      if(condition.FieldName.indexOf('.') > -1){   //if the fieldname is of the form user.name
         
         myJSON['fieldName'+sequence] = `%${condition.FieldValue}%`;
         console.log("1......",myJSON)
-        queryField = queryField.andWhere(condition.FieldName + " LIKE :fieldName"+sequence, myJSON);
+        queryField = queryField.andWhere(condition.FieldName + " LIKE :fieldName"+sequence, myJSON);  // fieldName is replaced by its value from myJson and added with and operator to query
       }
-      else{
+      else{ //if the fielName is not of the form user.name
         let myJSON = {};
         myJSON['fieldName'+sequence] = `%${condition.FieldValue}%`;
         console.log("2......",myJSON)
-        queryField = queryField.andWhere(sourceEntity + "." + condition.FieldName + " LIKE :fieldName"+sequence, myJSON);
+        queryField = queryField.andWhere(sourceEntity + "." + condition.FieldName + " LIKE :fieldName"+sequence, myJSON); //we are making the sourceEntity.fieldName in query
       }
     }
-    else{
-      if(condition.FieldName.indexOf('.') > -1){
+    else{ //if fieldValue is not a string
+      if(condition.FieldName.indexOf('.') > -1){ //if the fieldname is of the form user.name
         
         myJSON['fieldName'+sequence] = condition.FieldValue;
-        queryField = queryField.andWhere(condition.FieldName + "=:fieldName"+sequence, myJSON);
+        queryField = queryField.andWhere(condition.FieldName + "=:fieldName"+sequence, myJSON); // fieldName is replaced by its value from myJson and added with and operator to query
       }
       else{
         myJSON['fieldName'+sequence] = condition.FieldValue;
-        queryField = queryField.andWhere(sourceEntity + "." + condition.FieldName + "=:fieldName"+sequence, myJSON);
+        queryField = queryField.andWhere(sourceEntity + "." + condition.FieldName + "=:fieldName"+sequence, myJSON); // fieldName is replaced by its value from myJson and added with and operator to query
       }
     }
 
@@ -453,55 +456,39 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
     let totalConditionalArray = [];   // +1 for "Or" condition and -1 for "And" condition
     let count = 0
     // let totalConditionArrayLength = 1;
-    for(let i=0;i<requestModel.Filter.Conditions.length;i++){
+
+     //Counting consecutive or operators for segregation
+
+    for(let i=0;i<requestModel.Filter.Conditions.length;i++){ //iterating over all conditions
       console.log(totalConditionalArray)
       if(requestModel.Filter.Conditions[i].ConditionalSymbol != ConditionalOperation.Or){    //    And / Null Condition
         if(count!= 0){
-          totalConditionalArray.push(count+1);
+          totalConditionalArray.push(count+1); //pushing consecutive and operator counts
           count = 0
         }
         else{
-          totalConditionalArray.push(0)
+          totalConditionalArray.push(0) //pushing single and operator counts
         }
       }
       else{
-        count = count + 1 ;
+        count = count + 1 ;  //pushing single and operator counts
         totalConditionalArray.push(count);        // totalConditionalArray Contains 0 for And & Incremental value for Or
       }
     }
     console.log("totalConditionalArray......",totalConditionalArray)
     let finalConditionalArray = [];
-    // count = -1;
-    // for(let i = 0;i<totalConditionalArray.length-1;i++){
-    //   if(totalConditionalArray[i]== 0){
-    //     if(totalConditionalArray[i+1]!= 0){
-    //       finalConditionalArray.push(count);
-    //       count = -1;
-    //     }
-    //     else{
-    //       count = count - 1;
-    //     }
-    //   }
-    //   else{
-    //     if(totalConditionalArray[i+1]!= 0){
-    //       count = -1;
-    //     }
-    //     else{
-    //       finalConditionalArray.push(totalConditionalArray[i])
-    //       count = -1;
-    //     }
-    //   }
-    // }
-    //modified
+    
+
+    //grouping the ands and ors into finalConditionalArray based on the totalConditional array
     let flag = 0
     for(let i = totalConditionalArray.length-1;i>-1;i = i -1){
       console.log("flag....",flag)
-      if(totalConditionalArray[i] == 0){
+      if(totalConditionalArray[i] == 0){    //if there is no condition
         finalConditionalArray.unshift(-1)
         flag = 0
       }
       else{
-        if(flag == 0){
+        if(flag == 0){  //if a operator is coming for the first time
           finalConditionalArray.unshift(totalConditionalArray[i])
           flag = 1
         }
@@ -510,7 +497,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
     }
     console.log("After 1 st change.....finalConditionalArray.....",finalConditionalArray)
 
-    if(totalConditionalArray.length == 1 && totalConditionalArray[0] == 0){
+    if(totalConditionalArray.length == 1 && totalConditionalArray[0] == 0){ // if no conditional operator is specified
     finalConditionalArray = [-1]}
     // else if(totalConditionalArray[totalConditionalArray.length -1]!= 0){
     //   finalConditionalArray.push(totalConditionalArray[totalConditionalArray.length -1])
@@ -532,23 +519,24 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
 
     let i = 0;
     // console.log("\n\n\n\n\n TotalConditionalArray.......",totalConditionalArray)
-
+    
+    //Building the query
     for(let k = 0;k< finalConditionalArray.length;k++){
       let value = finalConditionalArray[k];
       // if(value>0){
       //   value += 1
       // }
       // console.log("Value is.......",value)
-      if(value<0){
-        for(let j = 0;j<(value*(-1));j++){
+      if(value<0){ // if no operator or and is specified
+        for(let j = 0;j<(value*(-1));j++){  // assigning and conditions to query
           queryField =  this.handleAndCondition(requestModel.Children[0],requestModel.Filter.Conditions[i],queryField,i);
           i += 1;
         }
       }
-      else{
+      else{  // if or operator is specified   
         queryField = queryField.andWhere(new Brackets((qb:SelectQueryBuilder<TEntity>) =>{
           for(let j = 0;j<value;j++){
-          qb = this.handleOrCondition(requestModel.Children[0],requestModel.Filter.Conditions[i],qb,i)
+          qb = this.handleOrCondition(requestModel.Children[0],requestModel.Filter.Conditions[i],qb,i) //assigning or conditions to query
           i += 1;
           }
         }))
@@ -573,7 +561,8 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
   //     })
   //   })
   //  }
-
+ 
+  // old version of request Model query handler
   public async assignConditionsToRequestModelQuery(requestModel:RequestModelQuery,queryField:SelectQueryBuilder<TEntity>):Promise<SelectQueryBuilder<TEntity>>{
     try{
     console.log("Length is...." + requestModel.Filter.Conditions.length + "\n\n\n\n\n\n\n");
@@ -680,7 +669,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
   private async createQueryByRequestModelQuery(requestModel: RequestModelQuery): Promise<SelectQueryBuilder<TEntity>>{
     try { 
       console.log("Inside createQueryByRequestModelQuery baby......requestModel is...." + JSON.stringify(requestModel));
-      let orderBy = requestModel.Filter.IsOrderByFieldAsc==null?true:requestModel.Filter.IsOrderByFieldAsc;
+      let orderBy = requestModel.Filter.IsOrderByFieldAsc==null?true:requestModel.Filter.IsOrderByFieldAsc; //processing orderByFields
       let orderByField = requestModel.Filter.OrderByField == null ? 'Id' : requestModel.Filter.OrderByField;
       let isCaseInsensitiveSearch = false;
       // if (requestModel != null && requestModel.Filter != null) {
@@ -694,7 +683,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
 
       console.log("here......12345");
       
-      let queryField = this.genericRepository.createQueryBuilder(requestModel.Children[0]);
+      let queryField = this.genericRepository.createQueryBuilder(requestModel.Children[0]); // creating the base query
       // let x = queryField.getMany();
       // console.log("x is...."+JSON.stringify(x));
       
@@ -705,8 +694,9 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
       // }
       // let result123 = await this.genericRepository.query('SELECT COUNT(DISTINCT("groupUser"."id")) AS "cnt" FROM "groupUsers" "groupUser" INNER JOIN "users" "user" ON "user"."id"="groupUser"."user_id"  INNER JOIN "groups" "group" ON "group"."id"="groupUser"."group_id" WHERE "groupUser"."group_image"=\'groupImage2\'');
 
-      if (requestModel.Children != null && requestModel.Children.length > 0) {
+      if (requestModel.Children != null && requestModel.Children.length > 0) { //if there are other tables to join
         for (let i = 1; i < requestModel.Children.length; i++) {
+          // joining child tables with base table           
           queryField = queryField.leftJoinAndSelect(requestModel.Children[0] + "." + requestModel.Children[i], requestModel.Children[i]);
         }
       }
@@ -723,10 +713,10 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
         // return queryField.select(['groupUser.groupId', "COUNT(\"groupUser\".\"id\")"])
       // }
 
-      queryField = await this.assignConditionsToRequestModelQueryV2(requestModel,queryField);
+      queryField = await this.assignConditionsToRequestModelQueryV2(requestModel,queryField); // adding conditions to the base query
 
       if (orderBy == true)
-        return queryField.orderBy(requestModel.Children[0] + "." + orderByField, 'ASC');
+        return queryField.orderBy(requestModel.Children[0] + "." + orderByField, 'ASC'); // handling orderBy conditions
       else
         return queryField.orderBy(requestModel.Children[0] + "." +orderByField,'DESC');
 
@@ -816,13 +806,13 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
       console.log("Inside Search..........")
       let queryField:any = null;
       if(isCustomApi!= null && isCustomApi == true){
-        queryField = await this.createQueryByCustomApiRequirement(requestModel,entityArray);
+        queryField = await this.createQueryByCustomApiRequirement(requestModel,entityArray); //use this for multi level joins
       }
       else{
-        queryField = await this.createQueryByRequestModelQuery(requestModel);
+        queryField = await this.createQueryByRequestModelQuery(requestModel); //use this for single level joins
       }
 
-      queryField = await this.divideQueryByPageSizeAndPageNo(requestModel,queryField);
+      queryField = await this.divideQueryByPageSizeAndPageNo(requestModel,queryField); //assigning pageNumber and pageSize to query
       
       // let totalRecords = await queryField.getCount();
       // console.log("totalRecords is....." + JSON.stringify(totalRecords));
@@ -949,6 +939,8 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
   //   }
   // }
   //children(child,parent), id(id of child whose parent is needed)
+
+  // use for multilevel joins (use for auth)
   public async getParentId(children: string[],id:number): Promise<ResponseModel<TDto>>{
     try {
 
