@@ -226,7 +226,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
     }
     catch (error){
       console.log("Error occured while inserting entity....." + error);
-      let final_result:ResponseModel<TDto> = new ResponseModel(entity.RequestGuid,null,ServiceOperationResultType.error,"500",null,null,null,entity.SocketId,entity.CommunityUrl)
+      let final_result:ResponseModel<TDto> = new ResponseModel(entity.RequestGuid,null,ServiceOperationResultType.error,"500",error,null,null,entity.SocketId,entity.CommunityUrl)
 
       throw new HttpException(final_result, HttpStatus.INTERNAL_SERVER_ERROR);
     };
@@ -280,9 +280,9 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
     }
     catch (err)
     {
-      let final_result:ResponseModel<TDto> = new ResponseModel(dtos.RequestGuid,null,ServiceOperationResultType.failure,"500",null,null,[err],dtos.SocketId,dtos.CommunityUrl)
+      let final_result:ResponseModel<TDto> = new ResponseModel(dtos.RequestGuid,null,ServiceOperationResultType.failure,"500",err,null,[err],dtos.SocketId,dtos.CommunityUrl)
       final_result.setDataCollection(dtos.DataCollection);
-      final_result.setMessage("500",err.detail)
+      final_result.setMessage("500",err)
       throw new HttpException(final_result, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
@@ -312,7 +312,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
     }
     catch (error){
       console.log("Error occured while deleting entity....." + error);
-      let final_result:ResponseModel<TDto> = new ResponseModel(entity.RequestGuid,null,ServiceOperationResultType.error,"500",null,null,null,entity.SocketId,entity.CommunityUrl)
+      let final_result:ResponseModel<TDto> = new ResponseModel(entity.RequestGuid,null,ServiceOperationResultType.error,"500",error,null,null,entity.SocketId,entity.CommunityUrl)
 
       throw new HttpException(final_result, HttpStatus.INTERNAL_SERVER_ERROR);
     };
@@ -834,7 +834,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
     }
     catch (err) {
       console.log("Error is......." + JSON.stringify(err));
-      let final_result: ResponseModel<TDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.error, "500", null, null, null, null, err)
+      let final_result: ResponseModel<TDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.error, "500", err, null, null, null, err)
 
       throw final_result;
     };
