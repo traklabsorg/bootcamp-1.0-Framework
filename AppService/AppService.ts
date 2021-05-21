@@ -351,19 +351,24 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
   }
 
 
-  public handleOrCondition(sourceEntity:string,condition:Condition,queryField:SelectQueryBuilder<TEntity>,sequence:number) : SelectQueryBuilder<TEntity>{
+  public handleOrCondition(sourceEntity:string,condition:Condition,queryField:SelectQueryBuilder<TEntity>,sequence:number,isCaseInsensitiveSearch?:boolean) : SelectQueryBuilder<TEntity>{
     console.log("Handling Or Condition");
     let myJSON = {};
     if(typeof(condition.FieldValue) == typeof('')){
+
+      let likeWildCard = " LIKE ";
+      if(isCaseInsensitiveSearch){
+        likeWildCard=" ILIKE "
+      }
       if(condition.FieldName.indexOf('.') > -1){
         
         myJSON['fieldName'+sequence] = `%${condition.FieldValue}%`;
-        queryField = queryField.orWhere(condition.FieldName + " LIKE :fieldName"+sequence, myJSON);
+      queryField = queryField.orWhere(condition.FieldName+likeWildCard+":fieldName"+sequence, myJSON);
       }
       else{
         let myJSON = {};
         myJSON['fieldName'+sequence] = `%${condition.FieldValue}%`;
-        queryField = queryField.orWhere(sourceEntity + "." + condition.FieldName + " LIKE :fieldName"+sequence, myJSON);
+        queryField = queryField.orWhere(sourceEntity + "." + condition.FieldName +likeWildCard+":fieldName"+sequence, myJSON);
       }
     }
     else{
@@ -386,21 +391,22 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
     let myJSON = {};
     console.log(typeof(condition.FieldValue))
     if(typeof(condition.FieldValue) == typeof('')){ //if fieldValue is a string
+      let likeWildCard = " LIKE ";
+      if(isCaseInsensitiveSearch){
+        likeWildCard=" ILIKE "
+      }
       console.log("Entered String Cond.....\n\n\n\n")
       if(condition.FieldName.indexOf('.') > -1){   //if the fieldname is of the form user.name
         
         myJSON['fieldName'+sequence] = `%${condition.FieldValue}%`;
         console.log("1......",myJSON)
-        queryField = queryField.andWhere(condition.FieldName + " LIKE :fieldName"+sequence, myJSON);  // fieldName is replaced by its value from myJson and added with and operator to query
+        queryField = queryField.andWhere(condition.FieldName+likeWildCard+":fieldName"+sequence, myJSON);  // fieldName is replaced by its value from myJson and added with and operator to query
       }
       else{ //if the fielName is not of the form user.name
         let myJSON = {};
         myJSON['fieldName'+sequence] = `%${condition.FieldValue}%`;
         console.log("2......",myJSON)
-        let likeWildCard = " LIKE ";
-        if(isCaseInsensitiveSearch){
-          likeWildCard=" ILIKE "
-        }
+       
         console.log("\n********** isCaseSensitiveSearch Inside HandleANDCondition:",isCaseInsensitiveSearch,"**********\n");
         queryField = queryField.andWhere(sourceEntity + "." + condition.FieldName +likeWildCard+":fieldName"+sequence, myJSON); //we are making the sourceEntity.fieldName in query
       }
@@ -541,7 +547,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
       else{  // if or operator is specified   
         queryField = queryField.andWhere(new Brackets((qb:SelectQueryBuilder<TEntity>) =>{
           for(let j = 0;j<value;j++){
-          qb = this.handleOrCondition(requestModel.Children[0],requestModel.Filter.Conditions[i],qb,i) //assigning or conditions to query
+          qb = this.handleOrCondition(requestModel.Children[0],requestModel.Filter.Conditions[i],qb,i,isCaseInsensitiveSearch) //assigning or conditions to query
           i += 1;
           }
         }))
@@ -806,25 +812,17 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
   public async search(requestModel: RequestModelQuery,isCustomApi?:boolean,isCaseInsensitiveSearch?:boolean,entityArray?:Array<Array<string>>): Promise<ResponseModel<TDto>> {
     try {
      
-      let caseSensitiveSearch:boolean;
+      let caseSensitiveSearch:boolean =true;
+      if(requestModel.Filter.Conditions[0].IsCaseInSensitiveSearch != null && requestModel.Filter.Conditions[0].IsCaseInSensitiveSearch ===false){
+        caseSensitiveSearch=requestModel.Filter.Conditions[0].IsCaseInSensitiveSearch;
+      }
       console.log("Inside Search..........")
       let queryField:any = null;
       if(isCustomApi!= null && isCustomApi == true){
         queryField = await this.createQueryByCustomApiRequirement(requestModel,entityArray); //use this for multi level joins
       }
       else{
-        if(isCaseInsensitiveSearch !=null && isCaseInsensitiveSearch === true){
-          caseSensitiveSearch = true;
-          queryField = await this.createQueryByRequestModelQuery(requestModel,caseSensitiveSearch); //use this for single level joins
-        }
-        else if(isCaseInsensitiveSearch !=null && isCaseInsensitiveSearch === false){
-          caseSensitiveSearch = false;
-          queryField = await this.createQueryByRequestModelQuery(requestModel,caseSensitiveSearch); //use this for single level joins
-        }else{
-          caseSensitiveSearch=false;
           queryField = await this.createQueryByRequestModelQuery(requestModel,caseSensitiveSearch);
-        }
-        
       }
 
       queryField = await this.divideQueryByPageSizeAndPageNo(requestModel,queryField); //assigning pageNumber and pageSize to query
