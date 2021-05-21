@@ -809,7 +809,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
   }
   }
 
-  public async search(requestModel: RequestModelQuery,isCustomApi?:boolean,isCaseInsensitiveSearch?:boolean,entityArray?:Array<Array<string>>): Promise<ResponseModel<TDto>> {
+  public async search(requestModel: RequestModelQuery,isCustomApi?:boolean,entityArray?:Array<Array<string>>): Promise<ResponseModel<TDto>> {
     try {
      
       let caseSensitiveSearch:boolean =true;
