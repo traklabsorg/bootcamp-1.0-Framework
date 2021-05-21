@@ -381,7 +381,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
     return queryField;
   }
 
-  public handleAndCondition(sourceEntity:string,condition:Condition,queryField:SelectQueryBuilder<TEntity>,sequence:number) : SelectQueryBuilder<TEntity>{
+  public handleAndCondition(sourceEntity:string,condition:Condition,queryField:SelectQueryBuilder<TEntity>,sequence:number,isCaseInsensitiveSearch?:boolean) : SelectQueryBuilder<TEntity>{
     console.log("Handling And Condition");
     let myJSON = {};
     console.log(typeof(condition.FieldValue))
@@ -397,7 +397,12 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
         let myJSON = {};
         myJSON['fieldName'+sequence] = `%${condition.FieldValue}%`;
         console.log("2......",myJSON)
-        queryField = queryField.andWhere(sourceEntity + "." + condition.FieldName + " LIKE :fieldName"+sequence, myJSON); //we are making the sourceEntity.fieldName in query
+        let likeWildCard = " LIKE ";
+        if(isCaseInsensitiveSearch){
+          likeWildCard=" ILIKE "
+        }
+        console.log("\n********** isCaseSensitiveSearch Inside HandleANDCondition:",isCaseInsensitiveSearch,"**********\n");
+        queryField = queryField.andWhere(sourceEntity + "." + condition.FieldName +likeWildCard+":fieldName"+sequence, myJSON); //we are making the sourceEntity.fieldName in query
       }
     }
     else{ //if fieldValue is not a string
@@ -416,7 +421,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
   }
 
 
-  public async assignConditionsToRequestModelQueryV2(requestModel:RequestModelQuery,queryField:SelectQueryBuilder<TEntity>):Promise<SelectQueryBuilder<TEntity>>{
+  public async assignConditionsToRequestModelQueryV2(requestModel:RequestModelQuery,queryField:SelectQueryBuilder<TEntity>,isCaseInsensitiveSearch?:boolean):Promise<SelectQueryBuilder<TEntity>>{
     try{
 
       console.log("\n\n\n\nInside assignConditionsToRequestModelQueryV3.........................\n\n\n\n")
@@ -529,7 +534,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
       // console.log("Value is.......",value)
       if(value<0){ // if no operator or and is specified
         for(let j = 0;j<(value*(-1));j++){  // assigning and conditions to query
-          queryField =  this.handleAndCondition(requestModel.Children[0],requestModel.Filter.Conditions[i],queryField,i);
+          queryField =  this.handleAndCondition(requestModel.Children[0],requestModel.Filter.Conditions[i],queryField,i,isCaseInsensitiveSearch);
           i += 1;
         }
       }
@@ -666,12 +671,11 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
   }
 
 
-  private async createQueryByRequestModelQuery(requestModel: RequestModelQuery): Promise<SelectQueryBuilder<TEntity>>{
+  private async createQueryByRequestModelQuery(requestModel: RequestModelQuery,isCaseInsensitiveSearch?:boolean): Promise<SelectQueryBuilder<TEntity>>{
     try { 
       console.log("Inside createQueryByRequestModelQuery baby......requestModel is...." + JSON.stringify(requestModel));
       let orderBy = requestModel.Filter.IsOrderByFieldAsc==null?true:requestModel.Filter.IsOrderByFieldAsc; //processing orderByFields
       let orderByField = requestModel.Filter.OrderByField == null ? 'Id' : requestModel.Filter.OrderByField;
-      let isCaseInsensitiveSearch = false;
       // if (requestModel != null && requestModel.Filter != null) {
       //   orderBy = !requestModel.Filter.IsOrderByFieldAsc ? 'DESC' : orderBy;
       //   orderByField = requestModel.Filter.OrderByField != null ? requestModel.Filter.OrderByField : orderByField;
@@ -713,7 +717,7 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
         // return queryField.select(['groupUser.groupId', "COUNT(\"groupUser\".\"id\")"])
       // }
 
-      queryField = await this.assignConditionsToRequestModelQueryV2(requestModel,queryField); // adding conditions to the base query
+      queryField = await this.assignConditionsToRequestModelQueryV2(requestModel,queryField,isCaseInsensitiveSearch); // adding conditions to the base query
 
       if (orderBy == true)
         return queryField.orderBy(requestModel.Children[0] + "." + orderByField, 'ASC'); // handling orderBy conditions
@@ -799,17 +803,28 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
   }
   }
 
-  public async search(requestModel: RequestModelQuery,isCustomApi?:boolean,entityArray?:Array<Array<string>>): Promise<ResponseModel<TDto>> {
+  public async search(requestModel: RequestModelQuery,isCustomApi?:boolean,isCaseInsensitiveSearch?:boolean,entityArray?:Array<Array<string>>): Promise<ResponseModel<TDto>> {
     try {
-
-
+     
+      let caseSensitiveSearch:boolean;
       console.log("Inside Search..........")
       let queryField:any = null;
       if(isCustomApi!= null && isCustomApi == true){
         queryField = await this.createQueryByCustomApiRequirement(requestModel,entityArray); //use this for multi level joins
       }
       else{
-        queryField = await this.createQueryByRequestModelQuery(requestModel); //use this for single level joins
+        if(isCaseInsensitiveSearch !=null && isCaseInsensitiveSearch === true){
+          caseSensitiveSearch = true;
+          queryField = await this.createQueryByRequestModelQuery(requestModel,caseSensitiveSearch); //use this for single level joins
+        }
+        else if(isCaseInsensitiveSearch !=null && isCaseInsensitiveSearch === false){
+          caseSensitiveSearch = false;
+          queryField = await this.createQueryByRequestModelQuery(requestModel,caseSensitiveSearch); //use this for single level joins
+        }else{
+          caseSensitiveSearch=false;
+          queryField = await this.createQueryByRequestModelQuery(requestModel,caseSensitiveSearch);
+        }
+        
       }
 
       queryField = await this.divideQueryByPageSizeAndPageNo(requestModel,queryField); //assigning pageNumber and pageSize to query
