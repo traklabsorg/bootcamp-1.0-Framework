@@ -813,9 +813,12 @@ export default class AppService<TEntity extends EntityBase, TDto extends DtoBase
     try {
      
       let caseSensitiveSearch:boolean =true;
-      if(requestModel.Filter.Conditions[0].IsCaseInSensitiveSearch != null && requestModel.Filter.Conditions[0].IsCaseInSensitiveSearch ===false){
-        caseSensitiveSearch=requestModel.Filter.Conditions[0].IsCaseInSensitiveSearch;
+      if(requestModel.Filter.Conditions.length != 0){
+        if(requestModel.Filter.Conditions[0].IsCaseInSensitiveSearch != null && requestModel.Filter.Conditions[0].IsCaseInSensitiveSearch ===false){
+          caseSensitiveSearch=requestModel.Filter.Conditions[0].IsCaseInSensitiveSearch;
+        }
       }
+      
       console.log("Inside Search..........")
       let queryField:any = null;
       if(isCustomApi!= null && isCustomApi == true){
